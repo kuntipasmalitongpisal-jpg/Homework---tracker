@@ -151,7 +151,7 @@
         </div>
         <button class="lock-btn" id="lockBtn">🔒 VIEWER</button>
       </div>
-      <p class="subtitle" id="subtitleText">โหมดผู้ชม — ข้อมูลอัปเดตแบบเรียลไทม์ ไม่ต้องมีบัญชี Claude</p>
+      <p class="subtitle" id="subtitleText">โหมดผู้ชม — ข้อมูลอัปเดตแบบเรียลไทม์</p>
     </header>
 
     <div class="banner error" id="errorBanner"></div>
@@ -239,9 +239,34 @@ const firebaseConfig = {
 
 const EDIT_PASSCODE = "2569";
 
-firebase.initializeApp(firebaseConfig);
-const db = firebase.database();
-const tasksRef = db.ref("tasks");
+let db, tasksRef;
+let firebaseReady = false;
+
+function initFirebase() {
+  try {
+    if (typeof firebase === "undefined") {
+      throw new Error("Firebase SDK ยังโหลดไม่สำเร็จ (เช็คอินเทอร์เน็ต)");
+    }
+    firebase.initializeApp(firebaseConfig);
+    db = firebase.database();
+    tasksRef = db.ref("tasks");
+    firebaseReady = true;
+
+    tasksRef.on("value", (snap) => {
+      tasks = snap.val() || {};
+      document.getElementById("syncLabel").textContent =
+        "SYNC " + new Date().toLocaleTimeString("th-TH", { hour: "2-digit", minute: "2-digit" });
+      render();
+    }, (err) => {
+      showBanner("error", "เชื่อมต่อฐานข้อมูลไม่สำเร็จ — ตรวจสอบ firebaseConfig และ Rules");
+      console.error(err);
+    });
+  } catch (err) {
+    document.getElementById("syncLabel").textContent = "OFFLINE — เชื่อมต่อไม่สำเร็จ";
+    showBanner("error", "โหลด Firebase ไม่สำเร็จ ตรวจสอบอินเทอร์เน็ตแล้วรีเฟรชหน้านี้อีกครั้ง");
+    console.error(err);
+  }
+}
 
 const TIER = {
   overdue: { label: "เลยกำหนด", color: "#FF6B6B" },
@@ -300,16 +325,6 @@ function showBanner(kind, msg) {
   el.classList.add("show");
   setTimeout(() => el.classList.remove("show"), 3500);
 }
-
-tasksRef.on("value", (snap) => {
-  tasks = snap.val() || {};
-  document.getElementById("syncLabel").textContent =
-    "SYNC " + new Date().toLocaleTimeString("th-TH", { hour: "2-digit", minute: "2-digit" });
-  render();
-}, (err) => {
-  showBanner("error", "เชื่อมต่อฐานข้อมูลไม่สำเร็จ — ตรวจสอบ firebaseConfig และ Rules");
-  console.error(err);
-});
 
 function matchesSearch(t) {
   const s = search.trim().toLowerCase();
@@ -377,15 +392,4 @@ function render() {
   }
 }
 
-function toggleDone(id) {
-  tasksRef.child(id).update({ done: !tasks[id].done })
-    .catch(() => showBanner("error", "บันทึกไม่สำเร็จ ลองใหม่อีกครั้ง"));
-}
-function removeTask(id) {
-  tasksRef.child(id).remove()
-    .then(() => showBanner("success", "ลบงานแล้ว"))
-    .catch(() => showBanner("error", "ลบไม่สำเร็จ ลองใหม่อีกครั้ง"));
-}
-function addTask() {
-  const subject = document.getElementById("f_subject").value.trim();
-  const task = document.getElementById("f_task").value.
+functi
