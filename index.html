@@ -77,7 +77,15 @@
   .chip.active { background: rgba(255,255,255,0.06); }
 
   .list-wrap { display: flex; flex-direction: column; gap: 10px; margin-bottom: 16px; min-height: 160px; max-height: 720px; overflow-y: auto; padding-right: 2px; }
+  .alien-mascot { font-size: 24px; display: inline-block; animation: bob 2.4s ease-in-out infinite; filter: drop-shadow(0 0 6px rgba(110,231,168,0.5)); }
+  @keyframes bob { 0%, 100% { transform: translateY(0) rotate(-4deg); } 50% { transform: translateY(-4px) rotate(4deg); } }
+
+  .star { position: absolute; border-radius: 50%; background: #DCEFEA; animation: twinkle 3s ease-in-out infinite; pointer-events: none; }
+  @keyframes twinkle { 0%, 100% { opacity: 0.15; } 50% { opacity: 0.9; } }
+
+  .empty-alien { font-size: 34px; display: block; margin-bottom: 8px; animation: bob 2.4s ease-in-out infinite; }
   .empty-state { color: var(--dim); font-size: 13.5px; text-align: center; padding: 30px 10px; }
+  .empty-state-cute { color: var(--muted); font-size: 13.5px; text-align: center; padding: 30px 10px; }
 
   .task-row { display: flex; align-items: flex-start; gap: 14px; background: rgba(255,255,255,0.02); border: 1px solid var(--panel-border); border-radius: 6px; padding: 18px; transition: transform 0.15s ease; }
   .task-row:hover { transform: translateX(2px); }
@@ -131,11 +139,18 @@
   .gate-submit { flex: 1; border: none; background: var(--violet); color: var(--void); border-radius: 4px; padding: 9px 12px; font-size: 13.5px; font-weight: 700; }
 
   @media (prefers-reduced-motion: reduce) {
-    .task-row, .ping-ring { animation: none !important; transition: none !important; }
+    .task-row, .ping-ring, .alien-mascot, .star { animation: none !important; transition: none !important; }
   }
 </style>
 </head>
 <body>
+
+<div class="star" style="width:3px; height:3px; top:8%; left:12%; animation-delay:0s;" aria-hidden="true"></div>
+<div class="star" style="width:2px; height:2px; top:15%; left:82%; animation-delay:0.6s;" aria-hidden="true"></div>
+<div class="star" style="width:2px; height:2px; top:30%; left:6%; animation-delay:1.2s;" aria-hidden="true"></div>
+<div class="star" style="width:3px; height:3px; top:75%; left:90%; animation-delay:1.8s;" aria-hidden="true"></div>
+<div class="star" style="width:2px; height:2px; top:88%; left:20%; animation-delay:0.3s;" aria-hidden="true"></div>
+<div class="star" style="width:2px; height:2px; top:50%; left:95%; animation-delay:2.1s;" aria-hidden="true"></div>
 
 <div class="frame">
   <span class="corner" style="top:6px;left:6px;border-right:none;border-bottom:none;"></span>
@@ -147,7 +162,7 @@
     <header>
       <div class="header-top">
         <div class="brand">
-          <span style="font-size:22px;">📡</span>
+          <span class="alien-mascot" aria-hidden="true">👽</span>
           <h1>TASK::LOG</h1>
         </div>
         <button class="lock-btn" id="lockBtn">🔒 VIEWER</button>
@@ -168,7 +183,7 @@
 
     <div class="list-wrap" id="listWrap"></div>
 
-    <button class="add-btn" id="addBtn" style="display:none;">+ เพิ่มงานใหม่</button>
+    <button class="add-btn" id="addBtn" style="display:none;">👽 + เพิ่มงานใหม่</button>
 
     <div class="form-card" id="formCard">
       <div class="form-header">
@@ -215,8 +230,8 @@
     <span class="corner" style="top:4px;right:4px;border-left:none;border-bottom:none;border-color:var(--violet);"></span>
     <span class="corner" style="bottom:4px;left:4px;border-right:none;border-top:none;border-color:var(--violet);"></span>
     <span class="corner" style="bottom:4px;right:4px;border-left:none;border-top:none;border-color:var(--violet);"></span>
-    <div style="font-size:20px; margin-bottom:8px;">🔒</div>
-    <h2 class="gate-title">ACCESS TERMINAL</h2>
+    <div class="alien-mascot" style="font-size:26px; margin-bottom:8px;" aria-hidden="true">👽</div>
+    <h2 class="gate-title">ขอรหัสผ่านหน่อยน้า</h2>
     <p class="gate-subtitle">ใส่รหัสผ่านเพื่อเข้าสู่โหมดแก้ไข</p>
     <input class="gate-input mono" id="gateInput" type="password" placeholder="••••" />
     <div class="gate-error" id="gateError">ACCESS DENIED — รหัสไม่ถูกต้อง</div>
@@ -353,7 +368,7 @@ function render() {
   const chipRow = document.getElementById("chipRow");
   chipRow.innerHTML = `
     <button class="chip ${filter==='all'?'active':''}" data-filter="all" style="border-color:${filter==='all'?'#DCEFEA':'#24333f'}; color:${filter==='all'?'#DCEFEA':'#7C93A0'};">ทั้งหมด <b>${entries.length}</b></button>
-    ${["overdue","urgent","soon","later","done"].map(k => {
+    ${["overdue","urgent","soon","later"].map(k => {
       const t = TIER[k]; const active = filter===k;
       return `<button class="chip ${active?'active':''}" data-filter="${k}" style="border-color:${t.color}; color:${t.color}; ${active?`box-shadow:0 0 10px ${t.color}55; background:${t.color}18;`:''}">${t.label} <b>${counts[k]||0}</b></button>`;
     }).join("")}
@@ -372,7 +387,10 @@ function render() {
 
   const listWrap = document.getElementById("listWrap");
   if (filtered.length === 0) {
-    listWrap.innerHTML = `<div class="empty-state">&gt; ไม่พบข้อมูลที่ตรงกับเงื่อนไข</div>`;
+    const msg = entries.length === 0
+      ? "ยังไม่มีงานเลย ว่างจัง~ มาเพิ่มงานแรกกันเถอะ"
+      : "ไม่พบงานที่ตรงกับที่ค้นหา ลองเปลี่ยนคำดูนะ~";
+    listWrap.innerHTML = `<div class="empty-state-cute"><span class="empty-alien">👽</span>${msg}</div>`;
   } else {
     listWrap.innerHTML = filtered.map(t => {
       const key = tierKey(t.due, t.done);
@@ -383,7 +401,7 @@ function render() {
         <span class="status-circle ${t.done?'done':''} ${editUnlocked?'editable':''}" ${editUnlocked?`onclick="toggleDone('${t.id}')"`:""}>${t.done?'✓':''}</span>
         <div style="flex:1; min-width:0;">
           <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
-            <span class="tier-badge" style="color:${tier.color}; border-color:${tier.color};">${tier.label}</span>
+            ${!t.done ? `<span class="tier-badge" style="color:${tier.color}; border-color:${tier.color};">${tier.label}</span>` : ""}
             <span class="subject-tag">${escapeHtml(t.subject)}</span>
           </div>
           <div class="task-text ${t.done?'done':''}">${escapeHtml(t.task)}</div>
@@ -412,7 +430,7 @@ function toggleDone(id) {
 function removeTask(id) {
   if (!firebaseReady) { showBanner("error", "ยังไม่ได้เชื่อมต่อฐานข้อมูล ลองรีเฟรชหน้านี้"); return; }
   tasksRef.child(id).remove()
-    .then(() => showBanner("success", "ลบงานแล้ว"))
+    .then(() => showBanner("success", "ลบงานแล้ว 🗑✨"))
     .catch(() => showBanner("error", "ลบไม่สำเร็จ ลองใหม่อีกครั้ง"));
 }
 function addTask() {
@@ -431,7 +449,7 @@ function addTask() {
   };
   tasksRef.push(newTask)
     .then(() => {
-      showBanner("success", "บันทึกงานสำเร็จ");
+      showBanner("success", "บันทึกงานสำเร็จแล้ว 👽🎉");
       ["f_subject","f_task","f_due","f_teacher","f_note"].forEach(id => document.getElementById(id).value = "");
       document.getElementById("f_assigned").value = todayIso();
       document.getElementById("formCard").classList.remove("show");
