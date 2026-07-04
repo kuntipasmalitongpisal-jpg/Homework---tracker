@@ -7,6 +7,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
 
+<!-- Firebase SDK (compat version — simplest to use with plain JS, no build step needed) -->
 <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-database-compat.js"></script>
 
@@ -227,6 +228,9 @@
 </div>
 
 <script>
+/* ============================================================
+   1) วางค่า firebaseConfig ของคุณตรงนี้ (ได้จากขั้นตอนที่ 4)
+   ============================================================ */
 const firebaseConfig = {
   apiKey: "AIzaSyA08uSd1HWomhJNtavBgVUb-sc37kechB4",
   authDomain: "homework---tracker.firebaseapp.com",
@@ -237,8 +241,12 @@ const firebaseConfig = {
   appId: "1:634036362570:web:e657135536baf5ecaab5b3"
 };
 
+/* ⚠️ เปลี่ยนรหัสนี้ก่อนแชร์ลิงก์จริง — รหัสปลดล็อกโหมดแก้ไข (กันฝั่งหน้าเว็บเท่านั้น) */
 const EDIT_PASSCODE = "2569";
 
+/* ============================================================
+   2) โค้ดแอป — ไม่ต้องแก้ไขส่วนด้านล่างนี้
+   ============================================================ */
 let db, tasksRef;
 let firebaseReady = false;
 
@@ -278,7 +286,7 @@ const TIER = {
 };
 const FILTER_KEYS = ["all", "overdue", "urgent", "soon", "later", "done"];
 
-let tasks = {};
+let tasks = {};          // { id: {subject, task, assignedDate, due, teacher, note, done} }
 let filter = "all";
 let search = "";
 let editUnlocked = false;
@@ -326,6 +334,7 @@ function showBanner(kind, msg) {
   setTimeout(() => el.classList.remove("show"), 3500);
 }
 
+// ---- Realtime listener: fires instantly for every viewer when data changes ----
 function matchesSearch(t) {
   const s = search.trim().toLowerCase();
   if (!s) return true;
@@ -340,6 +349,7 @@ function render() {
   const counts = { overdue:0, urgent:0, soon:0, later:0, done:0, none:0 };
   entries.forEach(t => { counts[tierKey(t.due, t.done)]++; });
 
+  // chips
   const chipRow = document.getElementById("chipRow");
   chipRow.innerHTML = `
     <button class="chip ${filter==='all'?'active':''}" data-filter="all" style="border-color:${filter==='all'?'#DCEFEA':'#24333f'}; color:${filter==='all'?'#DCEFEA':'#7C93A0'};">ทั้งหมด <b>${entries.length}</b></button>
@@ -349,6 +359,7 @@ function render() {
     }).join("")}
   `;
 
+  // list
   const filtered = entries
     .filter(t => filter === "all" ? true : tierKey(t.due, t.done) === filter)
     .filter(matchesSearch)
@@ -392,4 +403,111 @@ function render() {
   }
 }
 
-functi
+// ---- Actions (write to Firebase — every viewer sees the update instantly) ----
+function toggleDone(id) {
+  if (!firebaseReady) { showBanner("error", "ยังไม่ได้เชื่อมต่อฐานข้อมูล ลองรีเฟรชหน้านี้"); return; }
+  tasksRef.child(id).update({ done: !tasks[id].done })
+    .catch(() => showBanner("error", "บันทึกไม่สำเร็จ ลองใหม่อีกครั้ง"));
+}
+function removeTask(id) {
+  if (!firebaseReady) { showBanner("error", "ยังไม่ได้เชื่อมต่อฐานข้อมูล ลองรีเฟรชหน้านี้"); return; }
+  tasksRef.child(id).remove()
+    .then(() => showBanner("success", "ลบงานแล้ว"))
+    .catch(() => showBanner("error", "ลบไม่สำเร็จ ลองใหม่อีกครั้ง"));
+}
+function addTask() {
+  if (!firebaseReady) { showBanner("error", "ยังไม่ได้เชื่อมต่อฐานข้อมูล ลองรีเฟรชหน้านี้"); return; }
+  const subject = document.getElementById("f_subject").value.trim();
+  const task = document.getElementById("f_task").value.trim();
+  if (!subject || !task) { showBanner("error", "กรุณากรอกวิชาและรายละเอียดงาน"); return; }
+  const newTask = {
+    subject, task,
+    assignedDate: document.getElementById("f_assigned").value,
+    due: document.getElementById("f_due").value,
+    teacher: document.getElementById("f_teacher").value.trim(),
+    note: document.getElementById("f_note").value.trim(),
+    done: false,
+    createdAt: Date.now(),
+  };
+  tasksRef.push(newTask)
+    .then(() => {
+      showBanner("success", "บันทึกงานสำเร็จ");
+      ["f_subject","f_task","f_due","f_teacher","f_note"].forEach(id => document.getElementById(id).value = "");
+      document.getElementById("f_assigned").value = todayIso();
+      document.getElementById("formCard").classList.remove("show");
+    })
+    .catch((err) => {
+      showBanner("error", "บันทึกไม่สำเร็จ — ตรวจสอบการเชื่อมต่อหรือ Firebase Rules");
+      console.error(err);
+    });
+}
+
+// ---- UI wiring ----
+document.getElementById("chipRow").addEventListener("click", (e) => {
+  const btn = e.target.closest("[data-filter]");
+  if (!btn) return;
+  filter = btn.dataset.filter;
+  render();
+});
+document.getElementById("searchInput").addEventListener("input", (e) => {
+  search = e.target.value;
+  document.getElementById("searchClear").style.display = search ? "inline" : "none";
+  render();
+});
+document.getElementById("searchClear").addEventListener("click", () => {
+  search = ""; document.getElementById("searchInput").value = "";
+  document.getElementById("searchClear").style.display = "none";
+  render();
+});
+document.getElementById("addBtn").addEventListener("click", () => {
+  document.getElementById("f_assigned").value = document.getElementById("f_assigned").value || todayIso();
+  document.getElementById("formCard").classList.add("show");
+});
+document.getElementById("closeFormBtn").addEventListener("click", () => {
+  document.getElementById("formCard").classList.remove("show");
+});
+document.getElementById("submitTaskBtn").addEventListener("click", addTask);
+
+document.getElementById("lockBtn").addEventListener("click", () => {
+  if (editUnlocked) {
+    editUnlocked = false;
+    document.getElementById("lockBtn").textContent = "🔒 VIEWER";
+    document.getElementById("lockBtn").classList.remove("unlocked");
+    document.getElementById("subtitleText").textContent = "โหมดผู้ชม — ข้อมูลอัปเดตแบบเรียลไทม์";
+    document.getElementById("addBtn").style.display = "none";
+    document.getElementById("formCard").classList.remove("show");
+    render();
+  } else {
+    document.getElementById("gateOverlay").classList.add("show");
+    document.getElementById("gateInput").value = "";
+    document.getElementById("gateError").classList.remove("show");
+    document.getElementById("gateInput").focus();
+  }
+});
+document.getElementById("gateCancelBtn").addEventListener("click", () => {
+  document.getElementById("gateOverlay").classList.remove("show");
+});
+function submitGate() {
+  const val = document.getElementById("gateInput").value;
+  if (val === EDIT_PASSCODE) {
+    editUnlocked = true;
+    document.getElementById("gateOverlay").classList.remove("show");
+    document.getElementById("lockBtn").textContent = "🔓 EDIT MODE";
+    document.getElementById("lockBtn").classList.add("unlocked");
+    document.getElementById("subtitleText").textContent = "คุณอยู่ในโหมดแก้ไข — ผู้ที่เปิดลิงก์นี้จะเห็นแบบผู้ชมเท่านั้น";
+    document.getElementById("addBtn").style.display = "flex";
+    render();
+  } else {
+    document.getElementById("gateError").classList.add("show");
+  }
+}
+document.getElementById("gateSubmitBtn").addEventListener("click", submitGate);
+document.getElementById("gateInput").addEventListener("keydown", (e) => { if (e.key === "Enter") submitGate(); });
+
+// init
+document.getElementById("f_assigned").value = todayIso();
+render();
+initFirebase();
+</script>
+</body>
+</html>
