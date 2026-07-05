@@ -208,7 +208,7 @@
 
     <div class="form-card" id="formCard">
       <div class="form-header">
-        <span>NEW ENTRY</span>
+        <span id="formTitle">NEW ENTRY</span>
         <button id="closeFormBtn">✕</button>
       </div>
       <label class="field-label">วิชา</label>
@@ -492,7 +492,7 @@ function render() {
       const tier = TIER[key];
       const dl = daysLabel(t.due, t.done);
       return `
-      <div class="task-row ${t.done?'done':''}" style="box-shadow: inset 3px 0 0 ${tier.color};" onclick="openDetail('${t.id}')">
+      <div class="task-row ${t.done?'done':''}" style="box-shadow: inset 3px 0 0 ${tier.color};" onclick="${editUnlocked ? `openEditForm('${t.id}')` : `openDetail('${t.id}')`}">
         <span class="status-circle ${t.done?'done':''} ${editUnlocked?'editable':''}" ${editUnlocked?`onclick="event.stopPropagation(); toggleDone('${t.id}')"`:""}>${t.done?'✓':''}</span>
         <div style="flex:1; min-width:0;">
           <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
@@ -528,31 +528,67 @@ function removeTask(id) {
     .then(() => showBanner("success", "ลบงานแล้ว 🗑✨"))
     .catch(() => showBanner("error", "ลบไม่สำเร็จ ลองใหม่อีกครั้ง"));
 }
-function addTask() {
+let editingId = null;
+
+function openEditForm(id) {
+  const t = tasks[id];
+  if (!t) return;
+  editingId = id;
+  document.getElementById("f_subject").value = t.subject || "";
+  document.getElementById("f_assigned").value = t.assignedDate || todayIso();
+  document.getElementById("f_due").value = t.due || "";
+  document.getElementById("f_task").value = t.task || "";
+  document.getElementById("f_teacher").value = t.teacher || "";
+  document.getElementById("f_note").value = t.note || "";
+  document.getElementById("formTitle").textContent = "แก้ไขงาน";
+  document.getElementById("submitTaskBtn").textContent = "บันทึกการแก้ไข";
+  document.getElementById("formCard").classList.add("show");
+}
+
+function resetFormToAddMode() {
+  editingId = null;
+  ["f_subject","f_task","f_due","f_teacher","f_note"].forEach(id => document.getElementById(id).value = "");
+  document.getElementById("f_assigned").value = todayIso();
+  document.getElementById("formTitle").textContent = "NEW ENTRY";
+  document.getElementById("submitTaskBtn").textContent = "บันทึกงาน";
+}
+
+function saveTask() {
   if (!firebaseReady) { showBanner("error", "ยังไม่ได้เชื่อมต่อฐานข้อมูล ลองรีเฟรชหน้านี้"); return; }
   const subject = document.getElementById("f_subject").value.trim();
   const task = document.getElementById("f_task").value.trim();
   if (!subject || !task) { showBanner("error", "กรุณากรอกวิชาและรายละเอียดงาน"); return; }
-  const newTask = {
+  const fields = {
     subject, task,
     assignedDate: document.getElementById("f_assigned").value,
     due: document.getElementById("f_due").value,
     teacher: document.getElementById("f_teacher").value.trim(),
     note: document.getElementById("f_note").value.trim(),
-    done: false,
-    createdAt: Date.now(),
   };
-  tasksRef.push(newTask)
-    .then(() => {
-      showBanner("success", "บันทึกงานสำเร็จแล้ว ✨");
-      ["f_subject","f_task","f_due","f_teacher","f_note"].forEach(id => document.getElementById(id).value = "");
-      document.getElementById("f_assigned").value = todayIso();
-      document.getElementById("formCard").classList.remove("show");
-    })
-    .catch((err) => {
-      showBanner("error", "บันทึกไม่สำเร็จ — ตรวจสอบการเชื่อมต่อหรือ Firebase Rules");
-      console.error(err);
-    });
+
+  if (editingId) {
+    tasksRef.child(editingId).update(fields)
+      .then(() => {
+        showBanner("success", "แก้ไขงานสำเร็จแล้ว ✨");
+        resetFormToAddMode();
+        document.getElementById("formCard").classList.remove("show");
+      })
+      .catch((err) => {
+        showBanner("error", "แก้ไขไม่สำเร็จ — ตรวจสอบการเชื่อมต่อหรือ Firebase Rules");
+        console.error(err);
+      });
+  } else {
+    tasksRef.push({ ...fields, done: false, createdAt: Date.now() })
+      .then(() => {
+        showBanner("success", "บันทึกงานสำเร็จแล้ว ✨");
+        resetFormToAddMode();
+        document.getElementById("formCard").classList.remove("show");
+      })
+      .catch((err) => {
+        showBanner("error", "บันทึกไม่สำเร็จ — ตรวจสอบการเชื่อมต่อหรือ Firebase Rules");
+        console.error(err);
+      });
+  }
 }
 
 // ---- UI wiring ----
@@ -573,13 +609,14 @@ document.getElementById("searchClear").addEventListener("click", () => {
   render();
 });
 document.getElementById("addBtn").addEventListener("click", () => {
-  document.getElementById("f_assigned").value = document.getElementById("f_assigned").value || todayIso();
+  resetFormToAddMode();
   document.getElementById("formCard").classList.add("show");
 });
 document.getElementById("closeFormBtn").addEventListener("click", () => {
+  resetFormToAddMode();
   document.getElementById("formCard").classList.remove("show");
 });
-document.getElementById("submitTaskBtn").addEventListener("click", addTask);
+document.getElementById("submitTaskBtn").addEventListener("click", saveTask);
 
 document.getElementById("lockBtn").addEventListener("click", () => {
   if (editUnlocked) {
@@ -588,6 +625,7 @@ document.getElementById("lockBtn").addEventListener("click", () => {
     document.getElementById("lockBtn").classList.remove("unlocked");
     document.getElementById("subtitleText").textContent = "โหมดผู้ชม — ข้อมูลอัปเดตแบบเรียลไทม์";
     document.getElementById("addBtn").style.display = "none";
+    resetFormToAddMode();
     document.getElementById("formCard").classList.remove("show");
     render();
   } else {
