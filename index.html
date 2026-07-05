@@ -61,9 +61,27 @@
   }
   .unlock-key.fadeout { animation: keyFade 0.3s ease forwards; }
   @keyframes keyFade { to { opacity: 0; transform: translate(-50%, -50%) rotate(25deg) scale(0.7); } }
+  .unlock-key.relock-in { animation: keyTurnReverse 0.5s ease forwards; }
+  @keyframes keyTurnReverse {
+    0% { opacity: 0; transform: translate(-50%, -50%) rotate(25deg) translateX(-26px); }
+    55% { opacity: 1; }
+    100% { opacity: 1; transform: translate(-50%, -50%) rotate(-90deg) translateX(0px); }
+  }
+  .unlock-icon.snap { animation: lockSnap 0.4s ease forwards; }
+  @keyframes lockSnap {
+    0% { transform: scale(1); filter: drop-shadow(0 0 0 rgba(177,140,255,0)); }
+    40% { transform: scale(1.3); filter: drop-shadow(0 0 20px rgba(177,140,255,0.9)) drop-shadow(0 0 40px rgba(177,140,255,0.5)); }
+    100% { transform: scale(1); filter: drop-shadow(0 0 6px rgba(177,140,255,0.3)); }
+  }
   .unlock-particles { position: absolute; inset: 0; pointer-events: none; }
   .unlock-particle { position: absolute; left: 50%; top: 50%; width: 6px; height: 6px; border-radius: 50%; background: var(--green); box-shadow: 0 0 6px 1px rgba(110,231,168,0.8); animation: unlockBurst 0.6s ease-out forwards; }
   @keyframes unlockBurst { to { transform: translate(var(--dx), var(--dy)) scale(0); opacity: 0; } }
+  .unlock-particle.converge { animation: unlockConverge 0.48s ease-in forwards; }
+  @keyframes unlockConverge {
+    0% { transform: translate(var(--dx), var(--dy)) scale(0); opacity: 0; }
+    55% { opacity: 1; }
+    100% { transform: translate(0, 0) scale(1); opacity: 0; }
+  }
   ::-webkit-scrollbar { width: 8px; }
   ::-webkit-scrollbar-thumb { background: var(--panel-border); border-radius: 8px; }
   button { font-family: inherit; cursor: pointer; }
@@ -96,6 +114,10 @@
   .banner.show { display: block; }
 
   .search-bar { display: flex; align-items: center; gap: 8px; border: 1px solid var(--panel-border); border-radius: 4px; padding: 9px 12px; margin-bottom: 12px; background: rgba(255,255,255,0.02); }
+  .search-bar.search-hit { animation: searchPulseGreen 0.55s ease; }
+  @keyframes searchPulseGreen { 0% { box-shadow: 0 0 0 0 rgba(110,231,168,0); } 35% { box-shadow: 0 0 0 3px rgba(110,231,168,0.4); } 100% { box-shadow: 0 0 0 0 rgba(110,231,168,0); } }
+  .search-bar.search-miss { animation: searchPulseRed 0.55s ease; }
+  @keyframes searchPulseRed { 0% { box-shadow: 0 0 0 0 rgba(255,107,107,0); } 35% { box-shadow: 0 0 0 3px rgba(255,107,107,0.35); } 100% { box-shadow: 0 0 0 0 rgba(255,107,107,0); } }
   .search-bar input { flex: 1; background: transparent; border: none; color: var(--text); font-size: 14px; outline: none; }
   .search-bar button { border: none; background: transparent; color: var(--muted); padding: 2px; }
 
@@ -116,10 +138,16 @@
   .empty-state { color: var(--dim); font-size: 13.5px; text-align: center; padding: 30px 10px; }
   .empty-state-cute { color: var(--muted); font-size: 13.5px; text-align: center; padding: 30px 10px; }
 
-  .task-row { display: flex; align-items: flex-start; gap: 14px; background: rgba(255,255,255,0.02); border: 1px solid var(--panel-border); border-radius: 6px; padding: 18px; transition: transform 0.15s ease, box-shadow 0.2s ease; cursor: pointer; }
+  .task-row { display: flex; align-items: flex-start; gap: 14px; background: rgba(255,255,255,0.02); border: 1px solid var(--panel-border); border-radius: 6px; padding: 18px; transition: transform 0.15s ease, box-shadow 0.2s ease; cursor: pointer; animation: taskFadeIn 0.3s ease both; }
   .task-row:hover { transform: translateX(2px); }
   .task-row:active { transform: translateX(1px) scale(0.995); box-shadow: 0 0 0 1px rgba(255,255,255,0.15), inset 0 0 18px rgba(255,255,255,0.06); }
-  .task-row.done { opacity: 0.55; }
+  @keyframes taskFadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+  .task-row.pulse-overdue { animation: taskFadeIn 0.3s ease both, overduePulse 1.8s ease-in-out infinite; }
+  @keyframes overduePulse { 0%, 100% { filter: drop-shadow(0 0 0 rgba(255,107,107,0)); } 50% { filter: drop-shadow(0 0 9px rgba(255,107,107,0.55)); } }
+  .task-row.just-changed { animation: taskFadeIn 0.3s ease both, rowGlowFilter 1.1s ease; }
+  @keyframes rowGlowFilter { 0% { filter: drop-shadow(0 0 0 rgba(110,231,168,0)); } 30% { filter: drop-shadow(0 0 14px rgba(110,231,168,0.7)); } 100% { filter: drop-shadow(0 0 0 rgba(110,231,168,0)); } }
+  .task-row.removing { animation: taskSlideOut 0.32s ease forwards !important; pointer-events: none; }
+  @keyframes taskSlideOut { to { transform: translateX(24px); opacity: 0; } }
 
   .boot-overlay { position: fixed; inset: 0; background: var(--void); z-index: 200; display: flex; align-items: center; justify-content: center; overflow: hidden; transition: opacity 0.5s ease, visibility 0.5s ease; }
   .boot-overlay.hide { opacity: 0; visibility: hidden; pointer-events: none; }
@@ -141,15 +169,9 @@
   .detail-row-value { color: var(--text); font-weight: 600; text-align: right; }
   .detail-note-box { margin-top: 14px; background: rgba(255,255,255,0.03); border: 1px solid var(--panel-border); border-radius: 4px; padding: 10px 12px; font-size: 13px; color: var(--muted); line-height: 1.5; }
 
-  .status-circle { width: 28px; height: 28px; min-width: 28px; border-radius: 50%; border: 2px solid var(--panel-border); display: flex; align-items: center; justify-content: center; margin-top: 2px; background: transparent; }
-  .status-circle.done { border-color: var(--green); background: rgba(110,231,168,0.15); color: var(--green); }
-  .status-circle:not(.editable) { cursor: default; }
-  .status-circle.editable { cursor: pointer; }
-
   .tier-badge { font-size: 11px; font-weight: 700; padding: 3px 9px; border-radius: 3px; border: 1px solid; letter-spacing: 0.03em; }
   .subject-tag { font-size: 13.5px; font-weight: 600; color: #9FB3BE; }
   .task-text { font-size: 16px; margin-top: 7px; color: var(--text); font-weight: 500; line-height: 1.5; }
-  .task-text.done { text-decoration: line-through; }
   .note-text { font-size: 13px; color: var(--muted); margin-top: 3px; }
 
   .date-row { display: flex; gap: 8px; margin-top: 10px; flex-wrap: wrap; }
@@ -158,6 +180,11 @@
   .meta-row { font-size: 12px; color: var(--muted); margin-top: 8px; display: flex; gap: 12px; flex-wrap: wrap; align-items: center; }
 
   .delete-btn { border: none; background: transparent; color: var(--dim); padding: 4px; margin-top: 2px; }
+  .pin-btn { border: none; background: transparent; color: var(--dim); padding: 4px; margin-top: 2px; font-size: 14px; opacity: 0.5; }
+  .pin-btn.pinned { opacity: 1; filter: drop-shadow(0 0 4px rgba(255,200,87,0.6)); }
+  .pin-btn.bump { animation: pinBump 0.35s ease; }
+  @keyframes pinBump { 0% { transform: scale(1) rotate(0); } 45% { transform: scale(1.5) rotate(-18deg); } 100% { transform: scale(1) rotate(0); } }
+  .task-row.pinned-row { background: rgba(255,200,87,0.04); }
 
   .add-btn { display: flex; align-items: center; justify-content: center; gap: 8px; background: rgba(110,231,168,0.12); color: var(--green); border: 1.5px solid var(--green); border-radius: 4px; padding: 12px 16px; font-size: 14px; font-weight: 700; letter-spacing: 0.03em; }
 
@@ -221,7 +248,7 @@
     <div class="banner error" id="errorBanner"></div>
     <div class="banner success" id="successBanner"></div>
 
-    <div class="search-bar">
+    <div class="search-bar" id="searchBar">
       <span class="mono" style="color:var(--dim);">🔍</span>
       <input id="searchInput" placeholder="ค้นหาวิชา ชื่อครู หรือวันที่ (เช่น 15 ก.ค.)..." />
       <button id="searchClear" style="display:none;">✕</button>
@@ -382,8 +409,7 @@ function daysUntil(iso) {
   const due = new Date(iso + "T00:00:00");
   return Math.round((due - today) / 86400000);
 }
-function tierKey(iso, done) {
-  if (done) return "done";
+function tierKey(iso) {
   if (!iso) return "none";
   const d = daysUntil(iso);
   if (d < 0) return "overdue";
@@ -398,8 +424,8 @@ function fmtDate(iso) {
   const months = ["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
   return `${days[d.getDay()]} ${d.getDate()} ${months[d.getMonth()]}`;
 }
-function daysLabel(iso, done) {
-  if (done || !iso) return "";
+function daysLabel(iso) {
+  if (!iso) return "";
   const d = daysUntil(iso);
   if (d < 0) return `เลยมา ${Math.abs(d)} วัน`;
   if (d === 0) return "ส่งวันนี้";
@@ -424,19 +450,19 @@ function matchesSearch(t) {
 function openDetail(id) {
   const t = tasks[id];
   if (!t) return;
-  const key = tierKey(t.due, t.done);
+  const key = tierKey(t.due);
   const tier = TIER[key];
-  const dl = daysLabel(t.due, t.done);
+  const dl = daysLabel(t.due);
 
   const rows = [];
   if (t.assignedDate) rows.push(["วันที่สั่ง", fmtDate(t.assignedDate)]);
   if (t.due) rows.push(["วันที่ส่ง", fmtDate(t.due)]);
   if (dl) rows.push(["สถานะเวลา", dl]);
   if (t.teacher) rows.push(["ครู/อาจารย์", t.teacher]);
-  rows.push(["สถานะงาน", t.done ? "ทำเสร็จแล้ว ✓" : tier.label]);
+  rows.push(["สถานะ", tier.label]);
 
   document.getElementById("detailContent").innerHTML = `
-    <span class="detail-tier" style="color:${tier.color}; border-color:${tier.color};">${t.done ? "เสร็จแล้ว ✓" : tier.label}</span>
+    <span class="detail-tier" style="color:${tier.color}; border-color:${tier.color};">${tier.label}</span>
     <div class="detail-subject">${escapeHtml(t.subject)}</div>
     <div class="detail-task">${escapeHtml(t.task)}</div>
     ${rows.map(([label, value]) => `
@@ -488,28 +514,47 @@ function runBoot() {
   }, lines.length * 380 + 550);
 }
 
+let prevCounts = { all: 0, overdue: 0, urgent: 0, soon: 0, later: 0 };
+
+function animateCount(el, from, to, duration) {
+  if (!el || from === to) { if (el) el.textContent = to; return; }
+  const start = performance.now();
+  function step(now) {
+    const progress = Math.min((now - start) / duration, 1);
+    el.textContent = Math.round(from + (to - from) * progress);
+    if (progress < 1) requestAnimationFrame(step);
+  }
+  requestAnimationFrame(step);
+}
+
 function render() {
   const entries = Object.entries(tasks).map(([id, t]) => ({ id, ...t }));
 
-  const counts = { overdue:0, urgent:0, soon:0, later:0, done:0, none:0 };
-  entries.forEach(t => { counts[tierKey(t.due, t.done)]++; });
+  const counts = { overdue:0, urgent:0, soon:0, later:0, none:0 };
+  entries.forEach(t => { counts[tierKey(t.due)]++; });
 
-  // chips
+  // chips — render with previous counts first, then animate to new values
   const chipRow = document.getElementById("chipRow");
   chipRow.innerHTML = `
-    <button class="chip ${filter==='all'?'active':''}" data-filter="all" style="border-color:${filter==='all'?'#DCEFEA':'#24333f'}; color:${filter==='all'?'#DCEFEA':'#7C93A0'};">ทั้งหมด <b>${entries.length}</b></button>
+    <button class="chip ${filter==='all'?'active':''}" data-filter="all" style="border-color:${filter==='all'?'#DCEFEA':'#24333f'}; color:${filter==='all'?'#DCEFEA':'#7C93A0'};">ทั้งหมด <b data-count-key="all">${prevCounts.all}</b></button>
     ${["overdue","urgent","soon","later"].map(k => {
       const t = TIER[k]; const active = filter===k;
-      return `<button class="chip ${active?'active':''}" data-filter="${k}" style="border-color:${t.color}; color:${t.color}; ${active?`box-shadow:0 0 10px ${t.color}55; background:${t.color}18;`:''}">${t.label} <b>${counts[k]||0}</b></button>`;
+      return `<button class="chip ${active?'active':''}" data-filter="${k}" style="border-color:${t.color}; color:${t.color}; ${active?`box-shadow:0 0 10px ${t.color}55; background:${t.color}18;`:''}">${t.label} <b data-count-key="${k}">${prevCounts[k]||0}</b></button>`;
     }).join("")}
   `;
+  const newCounts = { all: entries.length, ...counts };
+  chipRow.querySelectorAll("[data-count-key]").forEach(el => {
+    const k = el.dataset.countKey;
+    animateCount(el, prevCounts[k] || 0, newCounts[k] || 0, 400);
+  });
+  prevCounts = newCounts;
 
   // list
   const filtered = entries
-    .filter(t => filter === "all" ? true : tierKey(t.due, t.done) === filter)
+    .filter(t => filter === "all" ? true : tierKey(t.due) === filter)
     .filter(matchesSearch)
     .sort((a,b) => {
-      if (!!a.done !== !!b.done) return a.done ? 1 : -1;
+      if (!!a.pinned !== !!b.pinned) return a.pinned ? -1 : 1;
       const da = a.due ? daysUntil(a.due) : 9999;
       const db_ = b.due ? daysUntil(b.due) : 9999;
       return da - db_;
@@ -522,19 +567,22 @@ function render() {
       : "ไม่พบงานที่ตรงกับที่ค้นหา ลองเปลี่ยนคำดูนะ~";
     listWrap.innerHTML = `<div class="empty-state-cute">${msg}</div>`;
   } else {
-    listWrap.innerHTML = filtered.map(t => {
-      const key = tierKey(t.due, t.done);
+    listWrap.innerHTML = filtered.map((t, idx) => {
+      const key = tierKey(t.due);
       const tier = TIER[key];
-      const dl = daysLabel(t.due, t.done);
+      const dl = daysLabel(t.due);
+      const delay = Math.min(idx * 40, 300);
+      const isOverdue = key === "overdue";
+      const isJustChanged = t.id === flashId;
       return `
-      <div class="task-row ${t.done?'done':''}" style="box-shadow: inset 3px 0 0 ${tier.color};" onclick="${editUnlocked ? `openEditForm('${t.id}')` : `openDetail('${t.id}')`}">
-        <span class="status-circle ${t.done?'done':''} ${editUnlocked?'editable':''}" ${editUnlocked?`onclick="event.stopPropagation(); toggleDone('${t.id}')"`:""}>${t.done?'✓':''}</span>
+      <div id="task-${t.id}" class="task-row ${isOverdue ? 'pulse-overdue' : ''} ${isJustChanged ? 'just-changed' : ''} ${t.pinned ? 'pinned-row' : ''}" style="box-shadow: inset 3px 0 0 ${tier.color};${t.pinned ? ' border-color: rgba(255,200,87,0.4);' : ''} animation-delay: ${delay}ms;" onclick="${editUnlocked ? `openEditForm('${t.id}')` : `openDetail('${t.id}')`}">
         <div style="flex:1; min-width:0;">
           <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
-            ${!t.done ? `<span class="tier-badge" style="color:${tier.color}; border-color:${tier.color};">${tier.label}</span>` : ""}
+            <span class="tier-badge" style="color:${tier.color}; border-color:${tier.color};">${tier.label}</span>
             <span class="subject-tag">${escapeHtml(t.subject)}</span>
+            ${t.pinned && !editUnlocked ? `<span title="ปักหมุด">📌</span>` : ""}
           </div>
-          <div class="task-text ${t.done?'done':''}">${escapeHtml(t.task)}</div>
+          <div class="task-text">${escapeHtml(t.task)}</div>
           ${t.note ? `<div class="note-text">${escapeHtml(t.note)}</div>` : ""}
           <div class="date-row">
             ${t.assignedDate ? `<span class="date-chip"><span class="date-chip-label">สั่ง</span><span class="mono">${fmtDate(t.assignedDate)}</span></span>` : ""}
@@ -545,6 +593,7 @@ function render() {
             ${t.teacher ? `<span>🎓 ${escapeHtml(t.teacher)}</span>` : ""}
           </div>
         </div>
+        ${editUnlocked ? `<button id="pin-${t.id}" class="pin-btn ${t.pinned ? 'pinned' : ''}" onclick="event.stopPropagation(); togglePin('${t.id}')" title="${t.pinned ? 'เลิกปักหมุด' : 'ปักหมุด'}">📌</button>` : ""}
         ${editUnlocked ? `<button class="delete-btn" onclick="event.stopPropagation(); removeTask('${t.id}')">🗑</button>` : ""}
       </div>`;
     }).join("");
@@ -552,16 +601,33 @@ function render() {
 }
 
 // ---- Actions (write to Firebase — every viewer sees the update instantly) ----
-function toggleDone(id) {
-  if (!firebaseReady) { showBanner("error", "ยังไม่ได้เชื่อมต่อฐานข้อมูล ลองรีเฟรชหน้านี้"); return; }
-  tasksRef.child(id).update({ done: !tasks[id].done })
-    .catch(() => showBanner("error", "บันทึกไม่สำเร็จ ลองใหม่อีกครั้ง"));
-}
+let flashId = null;
+
 function removeTask(id) {
   if (!firebaseReady) { showBanner("error", "ยังไม่ได้เชื่อมต่อฐานข้อมูล ลองรีเฟรชหน้านี้"); return; }
-  tasksRef.child(id).remove()
-    .then(() => showBanner("success", "ลบงานแล้ว 🗑✨"))
-    .catch(() => showBanner("error", "ลบไม่สำเร็จ ลองใหม่อีกครั้ง"));
+  const el = document.getElementById(`task-${id}`);
+  const doRemove = () => {
+    tasksRef.child(id).remove()
+      .then(() => showBanner("success", "ลบงานแล้ว 🗑✨"))
+      .catch(() => showBanner("error", "ลบไม่สำเร็จ ลองใหม่อีกครั้ง"));
+  };
+  if (el) {
+    el.classList.add("removing");
+    setTimeout(doRemove, 320);
+  } else {
+    doRemove();
+  }
+}
+function togglePin(id) {
+  if (!firebaseReady) { showBanner("error", "ยังไม่ได้เชื่อมต่อฐานข้อมูล ลองรีเฟรชหน้านี้"); return; }
+  const btn = document.getElementById(`pin-${id}`);
+  if (btn) {
+    btn.classList.remove("bump");
+    void btn.offsetWidth;
+    btn.classList.add("bump");
+  }
+  tasksRef.child(id).update({ pinned: !tasks[id].pinned })
+    .catch(() => showBanner("error", "ปักหมุดไม่สำเร็จ ลองใหม่อีกครั้ง"));
 }
 let editingId = null;
 
@@ -601,10 +667,17 @@ function saveTask() {
     note: document.getElementById("f_note").value.trim(),
   };
 
+  const armFlash = (id) => {
+    flashId = id;
+    setTimeout(() => { flashId = null; render(); }, 1300);
+  };
+
   if (editingId) {
-    tasksRef.child(editingId).update(fields)
+    const id = editingId;
+    tasksRef.child(id).update(fields)
       .then(() => {
         showBanner("success", "แก้ไขงานสำเร็จแล้ว ✨");
+        armFlash(id);
         resetFormToAddMode();
         document.getElementById("formCard").classList.remove("show");
       })
@@ -613,8 +686,9 @@ function saveTask() {
         console.error(err);
       });
   } else {
-    tasksRef.push({ ...fields, done: false, createdAt: Date.now() })
-      .then(() => {
+    const ref = tasksRef.push({ ...fields, pinned: false, createdAt: Date.now() });
+    armFlash(ref.key);
+    ref.then(() => {
         showBanner("success", "บันทึกงานสำเร็จแล้ว ✨");
         resetFormToAddMode();
         document.getElementById("formCard").classList.remove("show");
@@ -637,6 +711,14 @@ document.getElementById("searchInput").addEventListener("input", (e) => {
   search = e.target.value;
   document.getElementById("searchClear").style.display = search ? "inline" : "none";
   render();
+  const bar = document.getElementById("searchBar");
+  bar.classList.remove("search-hit", "search-miss");
+  if (search.trim()) {
+    const hasMatch = Object.values(tasks).some(matchesSearch);
+    void bar.offsetWidth;
+    bar.classList.add(hasMatch ? "search-hit" : "search-miss");
+    setTimeout(() => bar.classList.remove("search-hit", "search-miss"), 550);
+  }
 });
 document.getElementById("searchClear").addEventListener("click", () => {
   search = ""; document.getElementById("searchInput").value = "";
@@ -655,14 +737,7 @@ document.getElementById("submitTaskBtn").addEventListener("click", saveTask);
 
 document.getElementById("lockBtn").addEventListener("click", () => {
   if (editUnlocked) {
-    editUnlocked = false;
-    document.getElementById("lockBtnContent").textContent = "🔒 VIEWER";
-    document.getElementById("lockBtn").classList.remove("unlocked");
-    document.getElementById("subtitleText").textContent = "โหมดผู้ชม — ข้อมูลอัปเดตแบบเรียลไทม์";
-    document.getElementById("addBtn").style.display = "none";
-    resetFormToAddMode();
-    document.getElementById("formCard").classList.remove("show");
-    render();
+    runRelockAnimation();
   } else {
     document.getElementById("gateOverlay").classList.add("show");
     document.getElementById("gateInput").value = "";
@@ -673,23 +748,65 @@ document.getElementById("lockBtn").addEventListener("click", () => {
 document.getElementById("gateCancelBtn").addEventListener("click", () => {
   document.getElementById("gateOverlay").classList.remove("show");
 });
-function spawnUnlockParticles() {
+function spawnUnlockParticles(mode) {
   const wrap = document.getElementById("unlockParticles");
   wrap.innerHTML = "";
   const count = 14;
+  const color = mode === "converge" ? "var(--violet)" : "var(--green)";
   for (let i = 0; i < count; i++) {
     const angle = (Math.PI * 2 * i) / count + (Math.random() * 0.4 - 0.2);
     const dist = 45 + Math.random() * 35;
     const dx = Math.cos(angle) * dist;
     const dy = Math.sin(angle) * dist;
     const p = document.createElement("span");
-    p.className = "unlock-particle";
+    p.className = mode === "converge" ? "unlock-particle converge" : "unlock-particle";
+    p.style.background = color;
     p.style.setProperty("--dx", `${dx}px`);
     p.style.setProperty("--dy", `${dy}px`);
     p.style.animationDelay = `${Math.random() * 0.08}s`;
     wrap.appendChild(p);
   }
 }
+
+function applyViewerModeState() {
+  editUnlocked = false;
+  document.getElementById("lockBtnContent").textContent = "🔒 VIEWER";
+  document.getElementById("lockBtn").classList.remove("unlocked");
+  document.getElementById("subtitleText").textContent = "โหมดผู้ชม — ข้อมูลอัปเดตแบบเรียลไทม์";
+  document.getElementById("addBtn").style.display = "none";
+  resetFormToAddMode();
+  document.getElementById("formCard").classList.remove("show");
+  render();
+}
+
+function runRelockAnimation() {
+  const reduceMotion = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  if (reduceMotion) { applyViewerModeState(); return; }
+
+  const icon = document.getElementById("unlockIcon");
+  const key = document.getElementById("unlockKey");
+  icon.textContent = "🔓";
+  icon.className = "unlock-icon";
+  key.className = "unlock-key relock-in";
+  document.getElementById("unlockParticles").innerHTML = "";
+  document.getElementById("unlockOverlay").classList.add("show");
+
+  requestAnimationFrame(() => {
+    spawnUnlockParticles("converge");
+  });
+
+  setTimeout(() => {
+    icon.textContent = "🔒";
+    icon.classList.add("snap");
+    key.classList.add("fadeout");
+  }, 480);
+
+  setTimeout(() => {
+    document.getElementById("unlockOverlay").classList.remove("show");
+    applyViewerModeState();
+  }, 850);
+}
+
 
 function submitGate() {
   const val = document.getElementById("gateInput").value;
