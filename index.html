@@ -37,6 +37,33 @@
     padding: 24px 14px;
   }
   .mono { font-family: 'Space Mono', monospace; }
+  .mini-spinner { width: 11px; height: 11px; border: 2px solid rgba(255,255,255,0.2); border-top-color: var(--violet); border-radius: 50%; display: inline-block; animation: spin 0.6s linear infinite; vertical-align: -1px; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .fade-in-soft { animation: fadeInSoft 0.35s ease; }
+  @keyframes fadeInSoft { from { opacity: 0; transform: translateY(-3px); } to { opacity: 1; transform: translateY(0); } }
+
+  .unlock-stage { position: relative; width: 130px; height: 130px; display: flex; align-items: center; justify-content: center; }
+  .unlock-icon { font-size: 56px; display: inline-block; }
+  .unlock-icon.shake { animation: lockShake 0.35s ease-in-out 2; }
+  @keyframes lockShake { 0%, 100% { transform: rotate(0deg); } 25% { transform: rotate(-9deg); } 75% { transform: rotate(9deg); } }
+  .unlock-icon.pop { animation: lockPop 0.45s ease forwards; }
+  @keyframes lockPop {
+    0% { transform: scale(1); filter: drop-shadow(0 0 0 rgba(110,231,168,0)); }
+    35% { transform: scale(1.35); filter: drop-shadow(0 0 22px rgba(110,231,168,0.95)) drop-shadow(0 0 44px rgba(110,231,168,0.5)); }
+    100% { transform: scale(1.15); opacity: 0; filter: drop-shadow(0 0 10px rgba(110,231,168,0.4)); }
+  }
+  .unlock-key { position: absolute; left: 50%; top: 50%; font-size: 26px; opacity: 0; transform: translate(-50%, -50%) rotate(-90deg) translateX(26px); }
+  .unlock-key.turn { animation: keyTurn 0.5s ease forwards; }
+  @keyframes keyTurn {
+    0% { opacity: 0; transform: translate(-50%, -50%) rotate(-90deg) translateX(26px); }
+    55% { opacity: 1; }
+    100% { opacity: 1; transform: translate(-50%, -50%) rotate(25deg) translateX(0px); }
+  }
+  .unlock-key.fadeout { animation: keyFade 0.3s ease forwards; }
+  @keyframes keyFade { to { opacity: 0; transform: translate(-50%, -50%) rotate(25deg) scale(0.7); } }
+  .unlock-particles { position: absolute; inset: 0; pointer-events: none; }
+  .unlock-particle { position: absolute; left: 50%; top: 50%; width: 6px; height: 6px; border-radius: 50%; background: var(--green); box-shadow: 0 0 6px 1px rgba(110,231,168,0.8); animation: unlockBurst 0.6s ease-out forwards; }
+  @keyframes unlockBurst { to { transform: translate(var(--dx), var(--dy)) scale(0); opacity: 0; } }
   ::-webkit-scrollbar { width: 8px; }
   ::-webkit-scrollbar-thumb { background: var(--panel-border); border-radius: 8px; }
   button { font-family: inherit; cursor: pointer; }
@@ -186,7 +213,7 @@
           <span class="brand-icon" aria-hidden="true">📡</span>
           <h1>TASK::LOG</h1>
         </div>
-        <button class="lock-btn" id="lockBtn">🔒 VIEWER</button>
+        <button class="lock-btn" id="lockBtn"><span id="lockBtnContent">🔒 VIEWER</span></button>
       </div>
       <p class="subtitle" id="subtitleText">โหมดผู้ชม — ข้อมูลอัปเดตแบบเรียลไทม์</p>
     </header>
@@ -249,6 +276,14 @@
   <div class="detail-card" id="detailCard">
     <button class="detail-close" id="detailCloseBtn" aria-label="ปิด">✕</button>
     <div id="detailContent"></div>
+  </div>
+</div>
+
+<div class="overlay" id="unlockOverlay">
+  <div class="unlock-stage" id="unlockStage">
+    <span class="unlock-icon" id="unlockIcon">🔒</span>
+    <span class="unlock-key" id="unlockKey">🔑</span>
+    <div class="unlock-particles" id="unlockParticles"></div>
   </div>
 </div>
 
@@ -621,7 +656,7 @@ document.getElementById("submitTaskBtn").addEventListener("click", saveTask);
 document.getElementById("lockBtn").addEventListener("click", () => {
   if (editUnlocked) {
     editUnlocked = false;
-    document.getElementById("lockBtn").textContent = "🔒 VIEWER";
+    document.getElementById("lockBtnContent").textContent = "🔒 VIEWER";
     document.getElementById("lockBtn").classList.remove("unlocked");
     document.getElementById("subtitleText").textContent = "โหมดผู้ชม — ข้อมูลอัปเดตแบบเรียลไทม์";
     document.getElementById("addBtn").style.display = "none";
@@ -638,19 +673,74 @@ document.getElementById("lockBtn").addEventListener("click", () => {
 document.getElementById("gateCancelBtn").addEventListener("click", () => {
   document.getElementById("gateOverlay").classList.remove("show");
 });
+function spawnUnlockParticles() {
+  const wrap = document.getElementById("unlockParticles");
+  wrap.innerHTML = "";
+  const count = 14;
+  for (let i = 0; i < count; i++) {
+    const angle = (Math.PI * 2 * i) / count + (Math.random() * 0.4 - 0.2);
+    const dist = 45 + Math.random() * 35;
+    const dx = Math.cos(angle) * dist;
+    const dy = Math.sin(angle) * dist;
+    const p = document.createElement("span");
+    p.className = "unlock-particle";
+    p.style.setProperty("--dx", `${dx}px`);
+    p.style.setProperty("--dy", `${dy}px`);
+    p.style.animationDelay = `${Math.random() * 0.08}s`;
+    wrap.appendChild(p);
+  }
+}
+
 function submitGate() {
   const val = document.getElementById("gateInput").value;
-  if (val === EDIT_PASSCODE) {
+  if (val !== EDIT_PASSCODE) {
+    document.getElementById("gateError").classList.add("show");
+    return;
+  }
+  document.getElementById("gateOverlay").classList.remove("show");
+
+  const applyUnlockedState = () => {
     editUnlocked = true;
-    document.getElementById("gateOverlay").classList.remove("show");
-    document.getElementById("lockBtn").textContent = "🔓 EDIT MODE";
+    document.getElementById("lockBtnContent").textContent = "🔓 EDIT MODE";
     document.getElementById("lockBtn").classList.add("unlocked");
     document.getElementById("subtitleText").textContent = "คุณอยู่ในโหมดแก้ไข — ผู้ที่เปิดลิงก์นี้จะเห็นแบบผู้ชมเท่านั้น";
-    document.getElementById("addBtn").style.display = "flex";
+    const addBtn = document.getElementById("addBtn");
+    addBtn.style.display = "flex";
+    addBtn.classList.add("fade-in-soft");
     render();
-  } else {
-    document.getElementById("gateError").classList.add("show");
+  };
+
+  const reduceMotion = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  if (reduceMotion) {
+    applyUnlockedState();
+    return;
   }
+
+  const icon = document.getElementById("unlockIcon");
+  const key = document.getElementById("unlockKey");
+  icon.textContent = "🔒";
+  icon.className = "unlock-icon";
+  key.className = "unlock-key";
+  document.getElementById("unlockParticles").innerHTML = "";
+  document.getElementById("unlockOverlay").classList.add("show");
+
+  requestAnimationFrame(() => {
+    icon.classList.add("shake");
+    key.classList.add("turn");
+  });
+
+  setTimeout(() => {
+    icon.textContent = "🔓";
+    icon.classList.remove("shake");
+    icon.classList.add("pop");
+    key.classList.add("fadeout");
+    spawnUnlockParticles();
+  }, 520);
+
+  setTimeout(() => {
+    document.getElementById("unlockOverlay").classList.remove("show");
+    applyUnlockedState();
+  }, 980);
 }
 document.getElementById("gateSubmitBtn").addEventListener("click", submitGate);
 document.getElementById("gateInput").addEventListener("keydown", (e) => { if (e.key === "Enter") submitGate(); });
