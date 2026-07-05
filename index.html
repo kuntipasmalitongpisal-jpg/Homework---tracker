@@ -114,6 +114,80 @@
   .banner.show { display: block; }
 
   .search-bar { display: flex; align-items: center; gap: 8px; border: 1px solid var(--panel-border); border-radius: 4px; padding: 9px 12px; margin-bottom: 12px; background: rgba(255,255,255,0.02); }
+  .save-confirm-overlay { position: fixed; inset: 0; background: rgba(5,7,10,0.5); z-index: 160; display: flex; align-items: center; justify-content: center; opacity: 0; visibility: hidden; pointer-events: none; transition: opacity 0.25s ease, visibility 0.25s ease; }
+
+  body.time-frozen .frame * { animation-play-state: paused !important; }
+
+  .time-flash { position: fixed; inset: 0; background: radial-gradient(circle, #F5FBFF 0%, #BEE7FF 40%, transparent 75%); opacity: 0; z-index: 249; pointer-events: none; }
+  .time-flash.flash { animation: timeFlash 0.7s ease; }
+  @keyframes timeFlash { 0% { opacity: 0; } 20% { opacity: 1; } 100% { opacity: 0; } }
+  .time-flash.flash2 { animation: timeFlash2 0.9s ease; }
+  @keyframes timeFlash2 { 0% { opacity: 0; } 12% { opacity: 1; } 100% { opacity: 0; } }
+
+  .time-surge-overlay { position: fixed; inset: 0; z-index: 250; display: flex; align-items: center; justify-content: center; background: rgba(6,10,20,0); opacity: 0; visibility: hidden; pointer-events: none; overflow: hidden; transition: background 0.5s ease, opacity 0.5s ease, visibility 0.5s ease; }
+  .time-surge-overlay.show { opacity: 1; visibility: visible; background: rgba(4,7,16,0.65); }
+
+  .chrono-inbound-wrap { position: absolute; inset: 0; pointer-events: none; }
+
+  .chrono-corner-wave { position: absolute; width: 60vmax; height: 5px; background: linear-gradient(90deg, transparent 0%, rgba(111,214,255,0.85) 55%, #EAF6FF 100%); filter: blur(1.5px) drop-shadow(0 0 12px rgba(111,214,255,0.85)); opacity: 0; }
+  .chrono-corner-wave.tl { top: 0; left: 0; --ang: 45deg; transform-origin: 0% 50%; transform: rotate(45deg) scaleX(0); }
+  .chrono-corner-wave.tr { top: 0; right: 0; --ang: 135deg; transform-origin: 100% 50%; transform: rotate(135deg) scaleX(0); }
+  .chrono-corner-wave.bl { bottom: 0; left: 0; --ang: -45deg; transform-origin: 0% 50%; transform: rotate(-45deg) scaleX(0); }
+  .chrono-corner-wave.br { bottom: 0; right: 0; --ang: -135deg; transform-origin: 100% 50%; transform: rotate(-135deg) scaleX(0); }
+  .chrono-corner-wave.animate { animation: cornerWaveGrow 0.6s ease-in forwards; }
+  @keyframes cornerWaveGrow {
+    0% { opacity: 0; transform: rotate(var(--ang)) scaleX(0); }
+    22% { opacity: 1; }
+    65% { opacity: 0.85; transform: rotate(var(--ang)) scaleX(1); }
+    100% { opacity: 0; transform: rotate(var(--ang)) scaleX(1); }
+  }
+  .chrono-inbound { position: absolute; left: 50%; top: 50%; width: 8px; height: 8px; border-radius: 50%; background: #BEE7FF; box-shadow: 0 0 10px 2px rgba(111,214,255,0.9); opacity: 0; }
+  .chrono-inbound.animate { animation: chronoInbound 0.6s ease-in forwards; }
+  @keyframes chronoInbound { 0% { transform: translate(var(--sx), var(--sy)) scale(1); opacity: 0.9; } 100% { transform: translate(0, 0) scale(0.2); opacity: 0; } }
+
+  .chrono-rays { position: absolute; width: 60vmax; height: 60vmax; border-radius: 50%; background: conic-gradient(from 0deg, transparent 0deg, rgba(190,231,255,0.85) 10deg, transparent 35deg, transparent 130deg, rgba(124,147,255,0.7) 150deg, transparent 190deg, transparent 280deg, rgba(190,231,255,0.7) 300deg, transparent 330deg); opacity: 0; filter: blur(1px); }
+  .chrono-rays.animate { animation: chronoRaysSpin 1.6s cubic-bezier(0.2, 0.7, 0.3, 1) forwards; }
+  @keyframes chronoRaysSpin { 0% { transform: rotate(0deg) scale(0.15); opacity: 0; } 25% { opacity: 1; } 100% { transform: rotate(200deg) scale(1.4); opacity: 0; } }
+
+  .chrono-bloom { position: absolute; width: 80px; height: 80px; border-radius: 50%; background: radial-gradient(circle, rgba(230,247,255,1) 0%, rgba(111,214,255,0.6) 35%, rgba(111,214,255,0) 70%); opacity: 0; }
+  .chrono-bloom.animate { animation: chronoBloomPulse 1.4s cubic-bezier(0.15, 0.7, 0.3, 1) forwards; }
+  @keyframes chronoBloomPulse { 0% { transform: scale(0.15); opacity: 0; } 30% { transform: scale(1.2); opacity: 1; } 100% { transform: scale(9); opacity: 0; } }
+
+  .chrono-ring { position: absolute; width: 16px; height: 16px; border: 3px solid; border-radius: 50%; opacity: 0; }
+  .chrono-ring.animate { animation: chronoRingExpand 1.7s cubic-bezier(0.1, 0.6, 0.25, 1) forwards; }
+  @keyframes chronoRingExpand { 0% { width: 16px; height: 16px; opacity: 1; } 65% { opacity: 0.35; } 100% { width: 220vmax; height: 220vmax; opacity: 0; } }
+
+  .chrono-core { position: relative; width: 220px; height: 220px; opacity: 0; transform: scale(0.3) rotate(-30deg); }
+  .chrono-core.animate { animation: chronoCorePop 1s cubic-bezier(0.34, 1.56, 0.64, 1) forwards; }
+  @keyframes chronoCorePop { 0% { opacity: 0; transform: scale(0.15) rotate(-40deg); } 55% { opacity: 1; transform: scale(1.2) rotate(10deg); } 100% { opacity: 1; transform: scale(1) rotate(0); } }
+
+  .chrono-ring-outer { position: absolute; inset: -16px; border-radius: 50%; border: 7px solid transparent; border-top-color: #A8E8D8; border-right-color: #A8E8D8; box-shadow: 0 0 45px 12px rgba(168,232,216,0.55), 0 0 90px 26px rgba(111,214,255,0.35); }
+  .chrono-core.spin .chrono-ring-outer { animation: chronoRingSpin 1.6s linear infinite; }
+  @keyframes chronoRingSpin { from { transform: rotate(360deg); } to { transform: rotate(0deg); } }
+
+  .chrono-ring-inner { position: absolute; inset: 6px; border-radius: 50%; border: 14px solid; border-color: #6FA8E8 #6FA8E8 #4C86D6 #4C86D6; box-shadow: 0 0 50px 14px rgba(111,214,255,0.75), inset 0 0 25px rgba(255,255,255,0.3); }
+  .chrono-core.spin .chrono-ring-inner { animation: chronoRingSpin 2.4s linear infinite; }
+
+  .chrono-face { position: absolute; inset: 34px; border-radius: 50%; background: radial-gradient(circle, #ffffff 0%, #eaf6ff 65%, #cfe9ff 100%); box-shadow: 0 0 40px 6px rgba(255,255,255,0.9), 0 0 70px 18px rgba(190,231,255,0.7); }
+
+  .chrono-tick { position: absolute; left: 50%; top: 6px; width: 3px; height: 10px; background: #4C86D6; border-radius: 2px; transform-origin: 50% 74px; margin-left: -1.5px; }
+
+  .chrono-hand { position: absolute; left: 50%; top: 50%; background: #22334D; border-radius: 4px; transform-origin: 50% 100%; }
+  .chrono-hand-hour { width: 8px; height: 42px; margin-left: -4px; margin-top: -42px; }
+  .chrono-hand-min { width: 5px; height: 58px; margin-left: -2.5px; margin-top: -58px; background: #3A5A86; }
+  .chrono-core.spin .chrono-hand-hour { animation: chronoRingSpin 1.1s linear infinite; }
+  .chrono-core.spin .chrono-hand-min { animation: chronoRingSpin 0.4s linear infinite; }
+  .chrono-hub { position: absolute; left: 50%; top: 50%; width: 14px; height: 14px; margin-left: -7px; margin-top: -7px; background: #1C2B40; border-radius: 50%; box-shadow: 0 0 10px rgba(0,0,0,0.3); }
+
+  body.time-theme { background: radial-gradient(ellipse at 50% -10%, #101a30 0%, #0A0E1C 55%, #05070d 100%); --green: #6FD6FF; --violet: #7C93FF; }
+  body.time-theme h1 { text-shadow: 0 0 16px rgba(111,214,255,0.5); }
+  body.time-theme .frame { border-color: rgba(111,214,255,0.3); }
+  body.time-theme .brand-icon { animation: chronoSpin 7s linear infinite; filter: drop-shadow(0 0 8px rgba(111,214,255,0.65)); }
+  @keyframes chronoSpin { to { transform: rotate(360deg); } }
+  .save-confirm-overlay.show { opacity: 1; visibility: visible; }
+  .confirm-stage { width: 110px; height: 110px; border-radius: 50%; background: rgba(110,231,168,0.08); border: 1px solid rgba(110,231,168,0.3); display: flex; align-items: center; justify-content: center; }
+  .confirm-icon { font-size: 56px; color: var(--green); display: inline-block; filter: drop-shadow(0 0 18px rgba(110,231,168,0.7)); animation: confirmPop 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) both; }
+  @keyframes confirmPop { 0% { transform: scale(0) rotate(-20deg); opacity: 0; } 60% { transform: scale(1.25) rotate(4deg); opacity: 1; } 100% { transform: scale(1) rotate(0); opacity: 1; } }
   .search-bar.search-hit { animation: searchPulseGreen 0.55s ease; }
   @keyframes searchPulseGreen { 0% { box-shadow: 0 0 0 0 rgba(110,231,168,0); } 35% { box-shadow: 0 0 0 3px rgba(110,231,168,0.4); } 100% { box-shadow: 0 0 0 0 rgba(110,231,168,0); } }
   .search-bar.search-miss { animation: searchPulseRed 0.55s ease; }
@@ -237,7 +311,7 @@
     <header>
       <div class="header-top">
         <div class="brand">
-          <span class="brand-icon" aria-hidden="true">📡</span>
+          <span class="brand-icon" id="brandIcon" aria-hidden="true">📡</span>
           <h1>TASK::LOG</h1>
         </div>
         <button class="lock-btn" id="lockBtn"><span id="lockBtnContent">🔒 VIEWER</span></button>
@@ -303,6 +377,50 @@
   <div class="detail-card" id="detailCard">
     <button class="detail-close" id="detailCloseBtn" aria-label="ปิด">✕</button>
     <div id="detailContent"></div>
+  </div>
+</div>
+
+<div class="time-flash" id="timeFlash"></div>
+
+<div class="time-surge-overlay" id="timeSurgeOverlay">
+  <div class="chrono-corner-wave tl" id="waveTL"></div>
+  <div class="chrono-corner-wave tr" id="waveTR"></div>
+  <div class="chrono-corner-wave bl" id="waveBL"></div>
+  <div class="chrono-corner-wave br" id="waveBR"></div>
+  <div class="chrono-inbound-wrap" id="chronoInboundWrap"></div>
+  <div class="chrono-rays" id="chronoRays"></div>
+  <div class="chrono-bloom" id="chronoBloom"></div>
+  <div class="chrono-ring" style="border-color: rgba(190,231,255,0.75);"></div>
+  <div class="chrono-ring" style="border-color: rgba(111,214,255,0.6);"></div>
+  <div class="chrono-ring" style="border-color: rgba(124,147,255,0.5);"></div>
+  <div class="chrono-ring" style="border-color: rgba(111,214,255,0.4);"></div>
+  <div class="chrono-ring" style="border-color: rgba(124,147,255,0.3);"></div>
+  <div class="chrono-core" id="chronoCore">
+    <div class="chrono-ring-outer"></div>
+    <div class="chrono-ring-inner"></div>
+    <div class="chrono-face">
+      <div class="chrono-tick" style="transform: rotate(0deg);"></div>
+      <div class="chrono-tick" style="transform: rotate(30deg);"></div>
+      <div class="chrono-tick" style="transform: rotate(60deg);"></div>
+      <div class="chrono-tick" style="transform: rotate(90deg);"></div>
+      <div class="chrono-tick" style="transform: rotate(120deg);"></div>
+      <div class="chrono-tick" style="transform: rotate(150deg);"></div>
+      <div class="chrono-tick" style="transform: rotate(180deg);"></div>
+      <div class="chrono-tick" style="transform: rotate(210deg);"></div>
+      <div class="chrono-tick" style="transform: rotate(240deg);"></div>
+      <div class="chrono-tick" style="transform: rotate(270deg);"></div>
+      <div class="chrono-tick" style="transform: rotate(300deg);"></div>
+      <div class="chrono-tick" style="transform: rotate(330deg);"></div>
+      <div class="chrono-hand chrono-hand-hour"></div>
+      <div class="chrono-hand chrono-hand-min"></div>
+      <div class="chrono-hub"></div>
+    </div>
+  </div>
+</div>
+
+<div class="save-confirm-overlay" id="saveConfirmOverlay">
+  <div class="confirm-stage">
+    <span class="confirm-icon" id="confirmIcon">✓</span>
   </div>
 </div>
 
@@ -654,6 +772,21 @@ function resetFormToAddMode() {
   document.getElementById("submitTaskBtn").textContent = "บันทึกงาน";
 }
 
+function showSaveConfirm() {
+  const reduceMotion = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  if (reduceMotion) {
+    showBanner("success", "บันทึกสำเร็จแล้ว ✓");
+    return;
+  }
+  const overlay = document.getElementById("saveConfirmOverlay");
+  const icon = document.getElementById("confirmIcon");
+  icon.style.animation = "none";
+  void icon.offsetWidth;
+  icon.style.animation = "";
+  overlay.classList.add("show");
+  setTimeout(() => overlay.classList.remove("show"), 800);
+}
+
 function saveTask() {
   if (!firebaseReady) { showBanner("error", "ยังไม่ได้เชื่อมต่อฐานข้อมูล ลองรีเฟรชหน้านี้"); return; }
   const subject = document.getElementById("f_subject").value.trim();
@@ -676,7 +809,7 @@ function saveTask() {
     const id = editingId;
     tasksRef.child(id).update(fields)
       .then(() => {
-        showBanner("success", "แก้ไขงานสำเร็จแล้ว ✨");
+        showSaveConfirm();
         armFlash(id);
         resetFormToAddMode();
         document.getElementById("formCard").classList.remove("show");
@@ -689,7 +822,7 @@ function saveTask() {
     const ref = tasksRef.push({ ...fields, pinned: false, createdAt: Date.now() });
     armFlash(ref.key);
     ref.then(() => {
-        showBanner("success", "บันทึกงานสำเร็จแล้ว ✨");
+        showSaveConfirm();
         resetFormToAddMode();
         document.getElementById("formCard").classList.remove("show");
       })
@@ -874,6 +1007,83 @@ document.getElementById("f_assigned").value = todayIso();
 render();
 initFirebase();
 runBoot();
+
+function freezeUIBriefly(ms) {
+  document.body.classList.add("time-frozen");
+  setTimeout(() => document.body.classList.remove("time-frozen"), ms);
+}
+
+function applyTimeTheme() {
+  document.body.classList.add("time-theme");
+  const icon = document.getElementById("brandIcon");
+  if (icon) icon.textContent = "⏳";
+}
+
+function spawnInboundParticles() {
+  const wrap = document.getElementById("chronoInboundWrap");
+  wrap.innerHTML = "";
+  const count = 24;
+  const maxDist = Math.max(window.innerWidth, window.innerHeight) * 0.75;
+  for (let i = 0; i < count; i++) {
+    const angle = Math.random() * Math.PI * 2;
+    const dist = maxDist * (0.5 + Math.random() * 0.5);
+    const sx = Math.cos(angle) * dist;
+    const sy = Math.sin(angle) * dist;
+    const p = document.createElement("span");
+    p.className = "chrono-inbound";
+    p.style.setProperty("--sx", `${sx}px`);
+    p.style.setProperty("--sy", `${sy}px`);
+    p.style.animationDelay = `${Math.random() * 0.25}s`;
+    wrap.appendChild(p);
+  }
+  requestAnimationFrame(() => {
+    wrap.querySelectorAll(".chrono-inbound").forEach(el => el.classList.add("animate"));
+  });
+}
+
+function runTimeShift() {
+  const reduceMotion = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  if (reduceMotion) {
+    applyTimeTheme();
+    return;
+  }
+
+  freezeUIBriefly(2700);
+  document.getElementById("timeSurgeOverlay").classList.add("show");
+
+  // Phase 1 (0–650ms): energy is pulled backward into the center
+  document.getElementById("timeFlash").classList.add("flash");
+  spawnInboundParticles();
+  ["waveTL", "waveTR", "waveBL", "waveBR"].forEach(id => {
+    document.getElementById(id).classList.remove("animate");
+  });
+  requestAnimationFrame(() => {
+    ["waveTL", "waveTR", "waveBL", "waveBR"].forEach(id => {
+      document.getElementById(id).classList.add("animate");
+    });
+  });
+
+  // Phase 2 (~650ms): the pulled-in energy releases in one bright burst
+  setTimeout(() => {
+    document.getElementById("timeFlash").classList.add("flash2");
+    document.getElementById("chronoBloom").classList.add("animate");
+    document.getElementById("chronoRays").classList.add("animate");
+    document.querySelectorAll(".chrono-ring").forEach((el, i) => {
+      setTimeout(() => el.classList.add("animate"), i * 90);
+    });
+    const core = document.getElementById("chronoCore");
+    if (core) core.classList.add("animate", "spin");
+  }, 650);
+
+  setTimeout(applyTimeTheme, 950);
+
+  setTimeout(() => {
+    document.getElementById("timeSurgeOverlay").classList.remove("show");
+    document.getElementById("timeFlash").classList.remove("flash", "flash2");
+  }, 2600);
+}
+
+setTimeout(runTimeShift, 5000);
 </script>
 </body>
 </html>
