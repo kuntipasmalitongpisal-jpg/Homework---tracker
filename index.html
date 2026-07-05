@@ -77,8 +77,8 @@
   .chip.active { background: rgba(255,255,255,0.06); }
 
   .list-wrap { display: flex; flex-direction: column; gap: 10px; margin-bottom: 16px; min-height: 160px; max-height: 720px; overflow-y: auto; padding-right: 2px; }
-  .brand-icon { font-size: 22px; display: inline-block; animation: blink 2.2s ease-in-out infinite; }
-  @keyframes blink { 0%, 100% { opacity: 1; filter: drop-shadow(0 0 6px rgba(110,231,168,0.6)); } 50% { opacity: 0.4; filter: drop-shadow(0 0 2px rgba(110,231,168,0.2)); } }
+  .brand-icon { font-size: 22px; display: inline-block; animation: satelliteBlink 2.2s ease-in-out infinite; }
+  @keyframes satelliteBlink { 0%, 100% { opacity: 1; filter: drop-shadow(0 0 6px rgba(110,231,168,0.6)); } 50% { opacity: 0.75; filter: drop-shadow(0 0 2px rgba(110,231,168,0.25)); } }
   @keyframes bob { 0%, 100% { transform: translateY(0) rotate(-4deg); } 50% { transform: translateY(-4px) rotate(4deg); } }
 
 
@@ -89,9 +89,30 @@
   .empty-state { color: var(--dim); font-size: 13.5px; text-align: center; padding: 30px 10px; }
   .empty-state-cute { color: var(--muted); font-size: 13.5px; text-align: center; padding: 30px 10px; }
 
-  .task-row { display: flex; align-items: flex-start; gap: 14px; background: rgba(255,255,255,0.02); border: 1px solid var(--panel-border); border-radius: 6px; padding: 18px; transition: transform 0.15s ease; }
+  .task-row { display: flex; align-items: flex-start; gap: 14px; background: rgba(255,255,255,0.02); border: 1px solid var(--panel-border); border-radius: 6px; padding: 18px; transition: transform 0.15s ease, box-shadow 0.2s ease; cursor: pointer; }
   .task-row:hover { transform: translateX(2px); }
+  .task-row:active { transform: translateX(1px) scale(0.995); box-shadow: 0 0 0 1px rgba(255,255,255,0.15), inset 0 0 18px rgba(255,255,255,0.06); }
   .task-row.done { opacity: 0.55; }
+
+  .boot-overlay { position: fixed; inset: 0; background: var(--void); z-index: 200; display: flex; align-items: center; justify-content: center; overflow: hidden; transition: opacity 0.5s ease, visibility 0.5s ease; }
+  .boot-overlay.hide { opacity: 0; visibility: hidden; pointer-events: none; }
+  .boot-lines { font-family: 'Space Mono', monospace; font-size: 13px; color: var(--green); line-height: 2; min-width: 240px; }
+  .boot-line { opacity: 0; animation: bootIn 0.35s ease forwards; }
+  @keyframes bootIn { from { opacity: 0; transform: translateX(-8px); } to { opacity: 1; transform: translateX(0); } }
+  .boot-cursor { display: inline-block; width: 7px; height: 13px; background: var(--green); margin-left: 3px; vertical-align: middle; animation: blink 0.8s steps(1) infinite; }
+  @keyframes blink { 0%, 49% { opacity: 1; } 50%, 100% { opacity: 0; } }
+  .boot-scan { position: absolute; left: 0; right: 0; top: -80px; height: 80px; background: linear-gradient(180deg, transparent, rgba(110,231,168,0.22), transparent); animation: scanDown 1.4s ease-in-out infinite; }
+  @keyframes scanDown { 0% { top: -80px; } 100% { top: 100%; } }
+
+  .detail-card { position: relative; background: #0D1319; border: 1px solid var(--panel-border); border-radius: 6px; padding: 22px 20px; width: 100%; max-width: 380px; max-height: 80vh; overflow-y: auto; }
+  .detail-close { position: absolute; top: 12px; right: 12px; border: none; background: transparent; color: var(--muted); font-size: 16px; padding: 4px; }
+  .detail-tier { display: inline-block; font-size: 11.5px; font-weight: 700; padding: 3px 10px; border-radius: 3px; border: 1px solid; letter-spacing: 0.03em; margin-bottom: 10px; }
+  .detail-subject { font-size: 13.5px; font-weight: 600; color: #9FB3BE; margin-bottom: 4px; }
+  .detail-task { font-size: 18px; font-weight: 600; color: var(--text); line-height: 1.5; margin-bottom: 14px; }
+  .detail-row { display: flex; justify-content: space-between; gap: 10px; padding: 10px 0; border-top: 1px solid var(--panel-border); font-size: 13px; }
+  .detail-row-label { color: var(--muted); }
+  .detail-row-value { color: var(--text); font-weight: 600; text-align: right; }
+  .detail-note-box { margin-top: 14px; background: rgba(255,255,255,0.03); border: 1px solid var(--panel-border); border-radius: 4px; padding: 10px 12px; font-size: 13px; color: var(--muted); line-height: 1.5; }
 
   .status-circle { width: 28px; height: 28px; min-width: 28px; border-radius: 50%; border: 2px solid var(--panel-border); display: flex; align-items: center; justify-content: center; margin-top: 2px; background: transparent; }
   .status-circle.done { border-color: var(--green); background: rgba(110,231,168,0.15); color: var(--green); }
@@ -146,6 +167,11 @@
 </style>
 </head>
 <body>
+
+<div class="boot-overlay" id="bootOverlay">
+  <div class="boot-scan" aria-hidden="true"></div>
+  <div class="boot-lines" id="bootLines"></div>
+</div>
 
 <div class="frame">
   <span class="corner" style="top:6px;left:6px;border-right:none;border-bottom:none;"></span>
@@ -216,6 +242,13 @@
       <span class="ping-wrap"><span class="ping-core"></span><span class="ping-ring"></span></span>
       <span class="mono" id="syncLabel" style="color:var(--muted); font-size:12px;">CONNECTING...</span>
     </div>
+  </div>
+</div>
+
+<div class="overlay" id="detailOverlay">
+  <div class="detail-card" id="detailCard">
+    <button class="detail-close" id="detailCloseBtn" aria-label="ปิด">✕</button>
+    <div id="detailContent"></div>
   </div>
 </div>
 
@@ -353,6 +386,72 @@ function matchesSearch(t) {
   return hay.includes(s);
 }
 
+function openDetail(id) {
+  const t = tasks[id];
+  if (!t) return;
+  const key = tierKey(t.due, t.done);
+  const tier = TIER[key];
+  const dl = daysLabel(t.due, t.done);
+
+  const rows = [];
+  if (t.assignedDate) rows.push(["วันที่สั่ง", fmtDate(t.assignedDate)]);
+  if (t.due) rows.push(["วันที่ส่ง", fmtDate(t.due)]);
+  if (dl) rows.push(["สถานะเวลา", dl]);
+  if (t.teacher) rows.push(["ครู/อาจารย์", t.teacher]);
+  rows.push(["สถานะงาน", t.done ? "ทำเสร็จแล้ว ✓" : tier.label]);
+
+  document.getElementById("detailContent").innerHTML = `
+    <span class="detail-tier" style="color:${tier.color}; border-color:${tier.color};">${t.done ? "เสร็จแล้ว ✓" : tier.label}</span>
+    <div class="detail-subject">${escapeHtml(t.subject)}</div>
+    <div class="detail-task">${escapeHtml(t.task)}</div>
+    ${rows.map(([label, value]) => `
+      <div class="detail-row">
+        <span class="detail-row-label">${label}</span>
+        <span class="detail-row-value">${escapeHtml(value)}</span>
+      </div>
+    `).join("")}
+    ${t.note ? `<div class="detail-note-box">📝 ${escapeHtml(t.note)}</div>` : ""}
+  `;
+
+  const card = document.getElementById("detailCard");
+  card.style.transition = "none";
+  card.style.boxShadow = `0 0 40px 10px ${tier.color}77, 0 0 70px 20px ${tier.color}33`;
+  document.getElementById("detailOverlay").classList.add("show");
+  requestAnimationFrame(() => {
+    requestAnimationFrame(() => {
+      card.style.transition = "box-shadow 1s ease";
+      card.style.boxShadow = `0 0 16px 3px ${tier.color}55`;
+    });
+  });
+}
+
+function runBoot() {
+  const overlay = document.getElementById("bootOverlay");
+  const reduceMotion = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  if (reduceMotion) {
+    overlay.classList.add("hide");
+    return;
+  }
+  const lines = [
+    "&gt; INITIALIZING TASK::LOG",
+    "&gt; CONNECTING TO DATABASE...",
+    "&gt; SYNCING RECORDS",
+    "&gt; ACCESS GRANTED <span class=\"boot-cursor\"></span>",
+  ];
+  const el = document.getElementById("bootLines");
+  lines.forEach((line, i) => {
+    setTimeout(() => {
+      const div = document.createElement("div");
+      div.className = "boot-line";
+      div.innerHTML = line;
+      el.appendChild(div);
+    }, i * 380);
+  });
+  setTimeout(() => {
+    overlay.classList.add("hide");
+  }, lines.length * 380 + 550);
+}
+
 function render() {
   const entries = Object.entries(tasks).map(([id, t]) => ({ id, ...t }));
 
@@ -392,8 +491,8 @@ function render() {
       const tier = TIER[key];
       const dl = daysLabel(t.due, t.done);
       return `
-      <div class="task-row ${t.done?'done':''}" style="box-shadow: inset 3px 0 0 ${tier.color};">
-        <span class="status-circle ${t.done?'done':''} ${editUnlocked?'editable':''}" ${editUnlocked?`onclick="toggleDone('${t.id}')"`:""}>${t.done?'✓':''}</span>
+      <div class="task-row ${t.done?'done':''}" style="box-shadow: inset 3px 0 0 ${tier.color};" onclick="openDetail('${t.id}')">
+        <span class="status-circle ${t.done?'done':''} ${editUnlocked?'editable':''}" ${editUnlocked?`onclick="event.stopPropagation(); toggleDone('${t.id}')"`:""}>${t.done?'✓':''}</span>
         <div style="flex:1; min-width:0;">
           <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
             ${!t.done ? `<span class="tier-badge" style="color:${tier.color}; border-color:${tier.color};">${tier.label}</span>` : ""}
@@ -410,7 +509,7 @@ function render() {
             ${t.teacher ? `<span>🎓 ${escapeHtml(t.teacher)}</span>` : ""}
           </div>
         </div>
-        ${editUnlocked ? `<button class="delete-btn" onclick="removeTask('${t.id}')">🗑</button>` : ""}
+        ${editUnlocked ? `<button class="delete-btn" onclick="event.stopPropagation(); removeTask('${t.id}')">🗑</button>` : ""}
       </div>`;
     }).join("");
   }
@@ -518,9 +617,17 @@ document.getElementById("gateSubmitBtn").addEventListener("click", submitGate);
 document.getElementById("gateInput").addEventListener("keydown", (e) => { if (e.key === "Enter") submitGate(); });
 
 // init
+document.getElementById("detailCloseBtn").addEventListener("click", () => {
+  document.getElementById("detailOverlay").classList.remove("show");
+});
+document.getElementById("detailOverlay").addEventListener("click", (e) => {
+  if (e.target.id === "detailOverlay") document.getElementById("detailOverlay").classList.remove("show");
+});
+
 document.getElementById("f_assigned").value = todayIso();
 render();
 initFirebase();
+runBoot();
 </script>
 </body>
 </html>
