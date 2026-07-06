@@ -118,7 +118,7 @@
 
   body.time-frozen .frame * { animation-play-state: paused !important; }
 
-  .time-flash { position: fixed; inset: 0; background: radial-gradient(circle, #F5FBFF 0%, #BEE7FF 40%, transparent 75%); opacity: 0; z-index: 249; pointer-events: none; }
+  .time-flash { position: fixed; inset: 0; background: radial-gradient(circle, #FFFFFF 0%, #E8FFB8 35%, #FFD1F0 65%, transparent 78%); opacity: 0; z-index: 249; pointer-events: none; }
   .time-flash.flash { animation: timeFlash 0.7s ease; }
   @keyframes timeFlash { 0% { opacity: 0; } 20% { opacity: 1; } 100% { opacity: 0; } }
   .time-flash.flash2 { animation: timeFlash2 0.9s ease; }
@@ -167,10 +167,21 @@
   .ss-num { font-size: 100px; font-weight: 800; line-height: 1; }
   .ss-six { color: #C6FF3D; text-shadow: 0 0 24px rgba(198,255,61,0.85), 0 0 50px rgba(198,255,61,0.4); }
   .ss-seven { color: #FF3DBD; text-shadow: 0 0 24px rgba(255,61,189,0.85), 0 0 50px rgba(255,61,189,0.4); }
-  .ss-hand { font-size: 32px; }
   .six-seven-overlay.show .ss-six-col { animation: ssBounceUp 0.9s ease-in-out infinite; }
   .six-seven-overlay.show .ss-seven-col { animation: ssBounceUp 0.9s ease-in-out infinite; animation-delay: 0.45s; }
   @keyframes ssBounceUp { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-34px); } }
+
+  .meme-burst-overlay { position: fixed; inset: 0; z-index: 255; display: flex; align-items: center; justify-content: center; background: rgba(10,5,14,0); opacity: 0; visibility: hidden; pointer-events: none; overflow: hidden; transition: background 0.4s ease, opacity 0.4s ease, visibility 0.4s ease; }
+  .meme-burst-overlay.show { opacity: 1; visibility: visible; background: rgba(10,5,14,0.55); }
+
+  .burst-star { position: absolute; width: 70px; height: 70px; opacity: 0; background: conic-gradient(from 0deg, #C6FF3D 0deg 30deg, #FF3DBD 30deg 60deg, #C6FF3D 60deg 90deg, #FF3DBD 90deg 120deg, #C6FF3D 120deg 150deg, #FF3DBD 150deg 180deg, #C6FF3D 180deg 210deg, #FF3DBD 210deg 240deg, #C6FF3D 240deg 270deg, #FF3DBD 270deg 300deg, #C6FF3D 300deg 330deg, #FF3DBD 330deg 360deg); clip-path: polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%); filter: drop-shadow(0 0 26px rgba(198,255,61,0.65)) drop-shadow(0 0 26px rgba(255,61,189,0.5)); }
+  .burst-star.animate { animation: burstStarPop 1s cubic-bezier(0.2, 0.8, 0.3, 1) forwards; }
+  @keyframes burstStarPop { 0% { opacity: 0; transform: scale(0.1) rotate(0deg); } 15% { opacity: 1; } 60% { transform: scale(9) rotate(25deg); opacity: 0.85; } 100% { transform: scale(13) rotate(35deg); opacity: 0; } }
+
+  .confetti-wrap { position: absolute; inset: 0; pointer-events: none; }
+  .confetti-piece { position: absolute; left: 50%; top: 50%; width: 10px; height: 15px; opacity: 0; border-radius: 2px; }
+  .confetti-piece.animate { animation: confettiBurst 1.2s cubic-bezier(0.15, 0.7, 0.3, 1) forwards; }
+  @keyframes confettiBurst { 0% { transform: translate(0, 0) rotate(0deg) scale(1); opacity: 1; } 100% { transform: translate(var(--dx), var(--dy)) rotate(var(--rot)) scale(0.5); opacity: 0; } }
   @keyframes chronoCorePop { 0% { opacity: 0; transform: scale(0.15) rotate(-40deg); } 55% { opacity: 1; transform: scale(1.2) rotate(10deg); } 100% { opacity: 1; transform: scale(1) rotate(0); } }
 
   .chrono-ring-outer { position: absolute; inset: -16px; border-radius: 50%; border: 7px solid transparent; border-top-color: #A8E8D8; border-right-color: #A8E8D8; box-shadow: 0 0 45px 12px rgba(168,232,216,0.55), 0 0 90px 26px rgba(111,214,255,0.35); }
@@ -401,14 +412,17 @@
 <div class="six-seven-overlay" id="sixSevenOverlay">
   <div class="ss-stage">
     <div class="ss-col ss-six-col">
-      <span class="ss-hand">🫳🏻</span>
       <span class="ss-num ss-six">6</span>
     </div>
     <div class="ss-col ss-seven-col">
       <span class="ss-num ss-seven">7</span>
-      <span class="ss-hand">🫴🏻</span>
     </div>
   </div>
+</div>
+
+<div class="meme-burst-overlay" id="memeBurstOverlay">
+  <div class="burst-star" id="burstStar"></div>
+  <div class="confetti-wrap" id="confettiWrap"></div>
 </div>
 
 <div class="time-surge-overlay" id="timeSurgeOverlay">
@@ -1070,37 +1084,52 @@ function spawnInboundParticles() {
   });
 }
 
-function runBurst() {
-  document.getElementById("timeSurgeOverlay").classList.add("show");
-
-  // Phase 1 (0–650ms): energy pulled inward
-  document.getElementById("timeFlash").classList.add("flash");
-  spawnInboundParticles();
-  ["waveTL", "waveTR", "waveBL", "waveBR"].forEach(id => {
-    document.getElementById(id).classList.remove("animate");
-  });
+function spawnConfetti() {
+  const wrap = document.getElementById("confettiWrap");
+  wrap.innerHTML = "";
+  const colors = ["#C6FF3D", "#FF3DBD"];
+  const count = 34;
+  const maxDist = Math.max(window.innerWidth, window.innerHeight) * 0.65;
+  for (let i = 0; i < count; i++) {
+    const angle = Math.random() * Math.PI * 2;
+    const dist = maxDist * (0.4 + Math.random() * 0.6);
+    const dx = Math.cos(angle) * dist;
+    const dy = Math.sin(angle) * dist + 60; // slight downward drift for a confetti "fall" feel
+    const rot = Math.random() * 720 - 360;
+    const p = document.createElement("span");
+    p.className = "confetti-piece";
+    p.style.background = colors[i % 2];
+    p.style.setProperty("--dx", `${dx}px`);
+    p.style.setProperty("--dy", `${dy}px`);
+    p.style.setProperty("--rot", `${rot}deg`);
+    p.style.animationDelay = `${Math.random() * 0.12}s`;
+    wrap.appendChild(p);
+  }
   requestAnimationFrame(() => {
-    ["waveTL", "waveTR", "waveBL", "waveBR"].forEach(id => {
-      document.getElementById(id).classList.add("animate");
-    });
+    wrap.querySelectorAll(".confetti-piece").forEach(el => el.classList.add("animate"));
   });
+}
 
-  // Phase 2 (~650ms): bright release burst
+function runBurst() {
+  document.getElementById("memeBurstOverlay").classList.add("show");
+  document.getElementById("timeFlash").classList.add("flash");
+
+  const star = document.getElementById("burstStar");
+  star.classList.remove("animate");
+  void star.offsetWidth;
+  star.classList.add("animate");
+  spawnConfetti();
+
   setTimeout(() => {
     document.getElementById("timeFlash").classList.add("flash2");
-    document.getElementById("chronoBloom").classList.add("animate");
-    document.getElementById("chronoRays").classList.add("animate");
-    document.querySelectorAll(".chrono-ring").forEach((el, i) => {
-      setTimeout(() => el.classList.add("animate"), i * 90);
-    });
-  }, 650);
+  }, 150);
 
-  setTimeout(applySixSevenTheme, 950);
+  setTimeout(applySixSevenTheme, 500);
 
   setTimeout(() => {
-    document.getElementById("timeSurgeOverlay").classList.remove("show");
+    document.getElementById("memeBurstOverlay").classList.remove("show");
     document.getElementById("timeFlash").classList.remove("flash", "flash2");
-  }, 2600);
+  }, 1500);
 }
 
 function runTimeShift() {
@@ -1110,11 +1139,11 @@ function runTimeShift() {
     return;
   }
 
-  // Phase 0 (0–4000ms): everything freezes, "6" and "7" seesaw bounce with hands
-  freezeUIBriefly(6700);
+  // Phase 0 (0–4000ms): everything freezes, "6" and "7" seesaw bounce
+  freezeUIBriefly(5600);
   document.getElementById("sixSevenOverlay").classList.add("show");
 
-  // Phase 1+2 (4000ms onward): explosive release, then theme applied
+  // Phase 1 (4000ms onward): comic-burst + confetti explosion, then theme applied
   setTimeout(() => {
     document.getElementById("sixSevenOverlay").classList.remove("show");
     runBurst();
