@@ -159,6 +159,18 @@
 
   .chrono-core { position: relative; width: 220px; height: 220px; opacity: 0; transform: scale(0.3) rotate(-30deg); }
   .chrono-core.animate { animation: chronoCorePop 1s cubic-bezier(0.34, 1.56, 0.64, 1) forwards; }
+
+  .six-seven-overlay { position: fixed; inset: 0; z-index: 260; display: flex; align-items: center; justify-content: center; background: rgba(6,4,10,0); opacity: 0; visibility: hidden; pointer-events: none; transition: background 0.4s ease, opacity 0.4s ease, visibility 0.4s ease; }
+  .six-seven-overlay.show { opacity: 1; visibility: visible; background: rgba(8,5,14,0.7); }
+  .ss-stage { display: flex; align-items: flex-end; gap: 26px; }
+  .ss-col { display: flex; flex-direction: column; align-items: center; gap: 10px; }
+  .ss-num { font-size: 100px; font-weight: 800; line-height: 1; }
+  .ss-six { color: #C6FF3D; text-shadow: 0 0 24px rgba(198,255,61,0.85), 0 0 50px rgba(198,255,61,0.4); }
+  .ss-seven { color: #FF3DBD; text-shadow: 0 0 24px rgba(255,61,189,0.85), 0 0 50px rgba(255,61,189,0.4); }
+  .ss-hand { font-size: 32px; }
+  .six-seven-overlay.show .ss-six-col { animation: ssBounceUp 0.9s ease-in-out infinite; }
+  .six-seven-overlay.show .ss-seven-col { animation: ssBounceUp 0.9s ease-in-out infinite; animation-delay: 0.45s; }
+  @keyframes ssBounceUp { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-34px); } }
   @keyframes chronoCorePop { 0% { opacity: 0; transform: scale(0.15) rotate(-40deg); } 55% { opacity: 1; transform: scale(1.2) rotate(10deg); } 100% { opacity: 1; transform: scale(1) rotate(0); } }
 
   .chrono-ring-outer { position: absolute; inset: -16px; border-radius: 50%; border: 7px solid transparent; border-top-color: #A8E8D8; border-right-color: #A8E8D8; box-shadow: 0 0 45px 12px rgba(168,232,216,0.55), 0 0 90px 26px rgba(111,214,255,0.35); }
@@ -179,11 +191,15 @@
   .chrono-core.spin .chrono-hand-min { animation: chronoRingSpin 0.4s linear infinite; }
   .chrono-hub { position: absolute; left: 50%; top: 50%; width: 14px; height: 14px; margin-left: -7px; margin-top: -7px; background: #1C2B40; border-radius: 50%; box-shadow: 0 0 10px rgba(0,0,0,0.3); }
 
-  body.time-theme { background: radial-gradient(ellipse at 50% -10%, #101a30 0%, #0A0E1C 55%, #05070d 100%); --green: #6FD6FF; --violet: #7C93FF; }
-  body.time-theme h1 { text-shadow: 0 0 16px rgba(111,214,255,0.5); }
-  body.time-theme .frame { border-color: rgba(111,214,255,0.3); }
-  body.time-theme .brand-icon { animation: chronoSpin 7s linear infinite; filter: drop-shadow(0 0 8px rgba(111,214,255,0.65)); }
-  @keyframes chronoSpin { to { transform: rotate(360deg); } }
+  body.theme-67 { background: radial-gradient(ellipse at 50% -10%, #1a0f24 0%, #120a1a 55%, #05030a 100%); --green: #C6FF3D; --violet: #FF3DBD; }
+  body.theme-67 h1 { text-shadow: 0 0 16px rgba(198,255,61,0.5); }
+  body.theme-67 .frame { border-color: rgba(198,255,61,0.3); }
+  body.theme-67 .brand-icon { display: inline-flex; gap: 2px; }
+  .n6, .n7 { display: inline-block; font-weight: 800; font-size: 20px; }
+  .n6 { color: #C6FF3D; text-shadow: 0 0 10px rgba(198,255,61,0.8); animation: n6Bob 1s ease-in-out infinite; }
+  .n7 { color: #FF3DBD; text-shadow: 0 0 10px rgba(255,61,189,0.8); animation: n7Bob 1s ease-in-out infinite; }
+  @keyframes n6Bob { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-4px); } }
+  @keyframes n7Bob { 0%, 100% { transform: translateY(-4px); } 50% { transform: translateY(0); } }
   .save-confirm-overlay.show { opacity: 1; visibility: visible; }
   .confirm-stage { width: 110px; height: 110px; border-radius: 50%; background: rgba(110,231,168,0.08); border: 1px solid rgba(110,231,168,0.3); display: flex; align-items: center; justify-content: center; }
   .confirm-icon { font-size: 56px; color: var(--green); display: inline-block; filter: drop-shadow(0 0 18px rgba(110,231,168,0.7)); animation: confirmPop 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) both; }
@@ -381,6 +397,19 @@
 </div>
 
 <div class="time-flash" id="timeFlash"></div>
+
+<div class="six-seven-overlay" id="sixSevenOverlay">
+  <div class="ss-stage">
+    <div class="ss-col ss-six-col">
+      <span class="ss-hand">🫳🏻</span>
+      <span class="ss-num ss-six">6</span>
+    </div>
+    <div class="ss-col ss-seven-col">
+      <span class="ss-num ss-seven">7</span>
+      <span class="ss-hand">🫴🏻</span>
+    </div>
+  </div>
+</div>
 
 <div class="time-surge-overlay" id="timeSurgeOverlay">
   <div class="chrono-corner-wave tl" id="waveTL"></div>
@@ -1013,10 +1042,10 @@ function freezeUIBriefly(ms) {
   setTimeout(() => document.body.classList.remove("time-frozen"), ms);
 }
 
-function applyTimeTheme() {
-  document.body.classList.add("time-theme");
+function applySixSevenTheme() {
+  document.body.classList.add("theme-67");
   const icon = document.getElementById("brandIcon");
-  if (icon) icon.textContent = "⏳";
+  if (icon) icon.innerHTML = '<span class="n6">6</span><span class="n7">7</span>';
 }
 
 function spawnInboundParticles() {
@@ -1041,17 +1070,10 @@ function spawnInboundParticles() {
   });
 }
 
-function runTimeShift() {
-  const reduceMotion = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-  if (reduceMotion) {
-    applyTimeTheme();
-    return;
-  }
-
-  freezeUIBriefly(2700);
+function runBurst() {
   document.getElementById("timeSurgeOverlay").classList.add("show");
 
-  // Phase 1 (0–650ms): energy is pulled backward into the center
+  // Phase 1 (0–650ms): energy pulled inward
   document.getElementById("timeFlash").classList.add("flash");
   spawnInboundParticles();
   ["waveTL", "waveTR", "waveBL", "waveBR"].forEach(id => {
@@ -1063,7 +1085,7 @@ function runTimeShift() {
     });
   });
 
-  // Phase 2 (~650ms): the pulled-in energy releases in one bright burst
+  // Phase 2 (~650ms): bright release burst
   setTimeout(() => {
     document.getElementById("timeFlash").classList.add("flash2");
     document.getElementById("chronoBloom").classList.add("animate");
@@ -1071,16 +1093,32 @@ function runTimeShift() {
     document.querySelectorAll(".chrono-ring").forEach((el, i) => {
       setTimeout(() => el.classList.add("animate"), i * 90);
     });
-    const core = document.getElementById("chronoCore");
-    if (core) core.classList.add("animate", "spin");
   }, 650);
 
-  setTimeout(applyTimeTheme, 950);
+  setTimeout(applySixSevenTheme, 950);
 
   setTimeout(() => {
     document.getElementById("timeSurgeOverlay").classList.remove("show");
     document.getElementById("timeFlash").classList.remove("flash", "flash2");
   }, 2600);
+}
+
+function runTimeShift() {
+  const reduceMotion = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  if (reduceMotion) {
+    applySixSevenTheme();
+    return;
+  }
+
+  // Phase 0 (0–4000ms): everything freezes, "6" and "7" seesaw bounce with hands
+  freezeUIBriefly(6700);
+  document.getElementById("sixSevenOverlay").classList.add("show");
+
+  // Phase 1+2 (4000ms onward): explosive release, then theme applied
+  setTimeout(() => {
+    document.getElementById("sixSevenOverlay").classList.remove("show");
+    runBurst();
+  }, 4000);
 }
 
 setTimeout(runTimeShift, 5000);
