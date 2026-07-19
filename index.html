@@ -433,30 +433,50 @@
 
   .finance-header { display: flex; align-items: center; gap: 12px; margin-bottom: 16px; }
   .finance-title { font-weight: 700; font-size: 15px; letter-spacing: 0.02em; }
-  .finance-balance-card { background: rgba(255,255,255,0.03); border: 1px solid var(--panel-border); border-radius: 8px; padding: 20px; text-align: center; margin-bottom: 16px; }
-  .finance-balance-label { font-size: 12px; color: var(--muted); letter-spacing: 0.05em; }
-  .finance-balance-amount { font-size: 34px; font-weight: 800; margin-top: 4px; color: var(--green); }
-  .finance-balance-amount.negative { color: #FF6B6B; }
-  .finance-stat-row { display: flex; justify-content: center; gap: 16px; margin-top: 12px; font-size: 12.5px; color: var(--muted); }
+  .finance-balance-card { position: relative; background: linear-gradient(145deg, rgba(var(--green-rgb),0.1), rgba(var(--violet-rgb),0.08)); border: 1px solid rgba(var(--green-rgb),0.3); border-radius: 12px; padding: 22px 20px; text-align: center; margin-bottom: 16px; overflow: hidden; }
+  .finance-balance-card::before { content: ""; position: absolute; top: -40%; left: -20%; width: 140%; height: 140%; background: radial-gradient(circle, rgba(var(--green-rgb),0.15), transparent 60%); pointer-events: none; }
+  .finance-balance-label { position: relative; font-size: 12px; color: var(--muted); letter-spacing: 0.08em; text-transform: uppercase; }
+  .finance-balance-amount { position: relative; font-size: 38px; font-weight: 800; margin-top: 6px; color: var(--green); text-shadow: 0 0 20px rgba(var(--green-rgb),0.5); }
+  .finance-balance-amount.negative { color: #FF6B6B; text-shadow: 0 0 20px rgba(255,107,107,0.5); }
+  .finance-stat-row { position: relative; display: flex; justify-content: center; gap: 16px; margin-top: 14px; font-size: 12.5px; color: var(--muted); }
   .finance-stat b { font-weight: 700; }
   .finance-stat.income b { color: var(--green); }
   .finance-stat.expense b { color: #FF6B6B; }
+
+  .finance-donut-wrap { display: flex; align-items: center; justify-content: center; gap: 18px; margin-bottom: 16px; }
+  .finance-donut { width: 92px; height: 92px; border-radius: 50%; display: flex; align-items: center; justify-content: center; transition: background 0.6s ease; box-shadow: 0 0 24px rgba(var(--green-rgb),0.25); }
+  .finance-donut-center { width: 64%; height: 64%; border-radius: 50%; background: var(--void); display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 13px; color: var(--text); }
+  .finance-legend { display: flex; flex-direction: column; gap: 6px; font-size: 12.5px; }
+  .finance-legend-item { display: flex; align-items: center; gap: 6px; }
+  .finance-legend-dot { width: 9px; height: 9px; border-radius: 50%; }
+
   .finance-add-row { display: flex; gap: 8px; margin-bottom: 14px; }
   .finance-add-btn { flex: 1; }
   .finance-add-btn.income { background: var(--green); }
   .finance-add-btn.expense { background: #FF6B6B; color: #fff; }
+
+  .finance-category-row { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 10px; }
+  .finance-cat-chip { border: 1.5px solid var(--panel-border); background: transparent; border-radius: 20px; padding: 6px 12px; font-size: 13px; color: var(--muted); display: flex; align-items: center; gap: 5px; }
+  .finance-cat-chip.selected { border-color: var(--green); color: var(--text); background: rgba(var(--green-rgb),0.12); }
+
   .finance-list { display: flex; flex-direction: column; gap: 8px; }
-  .finance-item { display: flex; align-items: center; gap: 12px; background: rgba(255,255,255,0.02); border: 1px solid var(--panel-border); border-radius: 6px; padding: 12px 14px; }
-  .finance-item-icon { width: 30px; height: 30px; min-width: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 15px; }
-  .finance-item-icon.income { background: rgba(110,231,168,0.15); }
-  .finance-item-icon.expense { background: rgba(255,107,107,0.15); }
+  .finance-item { display: flex; align-items: center; gap: 12px; background: rgba(255,255,255,0.02); border: 1px solid var(--panel-border); border-radius: 6px; padding: 12px 14px; transition: transform 0.15s ease; }
+  .finance-item:hover { transform: translateX(2px); }
+  .finance-item-icon { width: 34px; height: 34px; min-width: 34px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 17px; }
+  .finance-item-icon.income { background: rgba(var(--green-rgb),0.15); box-shadow: 0 0 10px rgba(var(--green-rgb),0.2); }
+  .finance-item-icon.expense { background: rgba(255,107,107,0.15); box-shadow: 0 0 10px rgba(255,107,107,0.2); }
   .finance-item-body { flex: 1; min-width: 0; }
   .finance-item-desc { font-size: 14.5px; color: var(--text); font-weight: 500; }
+  .finance-item-cat { font-size: 11px; color: var(--muted); margin-top: 1px; }
   .finance-item-date { font-size: 11.5px; color: var(--muted); margin-top: 2px; }
   .finance-item-amount { font-weight: 700; font-size: 15px; white-space: nowrap; }
   .finance-item-amount.income { color: var(--green); }
   .finance-item-amount.expense { color: #FF6B6B; }
   .finance-item-delete { border: none; background: transparent; color: var(--dim); padding: 4px; }
+
+  .floating-money { position: fixed; z-index: 300; font-weight: 800; font-size: 20px; pointer-events: none; opacity: 0; }
+  .floating-money.rise { animation: floatingMoneyRise 1.1s ease-out forwards; }
+  @keyframes floatingMoneyRise { 0% { opacity: 0; transform: translateY(0) scale(0.8); } 20% { opacity: 1; transform: translateY(-6px) scale(1.1); } 100% { opacity: 0; transform: translateY(-60px) scale(1); } }
   .ping-wrap { position: relative; width: 10px; height: 10px; display: inline-flex; align-items: center; justify-content: center; }
   .ping-core { width: 6px; height: 6px; border-radius: 50%; background: var(--green); }
   .ping-ring { position: absolute; width: 6px; height: 6px; border-radius: 50%; background: var(--green); animation: ping 1.8s cubic-bezier(0,0,0.2,1) infinite; }
@@ -537,10 +557,10 @@
       <p class="subtitle" id="subtitleText">โหมดผู้ชม — ข้อมูลอัปเดตแบบเรียลไทม์</p>
     </header>
 
-    <div id="taskMainView">
     <div class="banner error" id="errorBanner"></div>
     <div class="banner success" id="successBanner"></div>
 
+    <div id="taskMainView">
     <div class="search-bar" id="searchBar">
       <span class="mono" style="color:var(--dim);">🔍</span>
       <input id="searchInput" placeholder="ค้นหาวิชา ชื่อครู หรือวันที่ (เช่น 15 ก.ค.)..." />
@@ -606,17 +626,30 @@
         </div>
       </div>
 
+      <div class="finance-donut-wrap" id="financeDonutWrap" style="display:none;">
+        <div class="finance-donut" id="financeDonut">
+          <div class="finance-donut-center"><span id="financeDonutPct">0%</span></div>
+        </div>
+        <div class="finance-legend">
+          <span class="finance-legend-item"><span class="finance-legend-dot" style="background:var(--green);"></span> รายรับ</span>
+          <span class="finance-legend-item"><span class="finance-legend-dot" style="background:#FF6B6B;"></span> รายจ่าย</span>
+        </div>
+      </div>
+
       <div id="financeAddBtns" class="finance-add-row" style="display:none;">
         <button id="addIncomeBtn" class="submit-btn finance-add-btn income">+ รายรับ</button>
         <button id="addExpenseBtn" class="submit-btn finance-add-btn expense">+ รายจ่าย</button>
       </div>
+      <p id="financeViewerHint" style="margin:0 0 14px; font-size:12.5px; color:var(--muted); text-align:center;">🔒 ปลดล็อกโหมดแก้ไข (ปุ่ม VIEWER มุมขวาบน) ก่อน จึงจะเพิ่ม/ลบรายการการเงินได้</p>
 
-      <div id="financeFormCard" class="form-card" style="display:none;">
+      <div id="financeFormCard" class="form-card">
         <div class="form-header">
           <span id="financeFormTitle">เพิ่มรายรับ</span>
           <button id="financeFormCloseBtn">✕</button>
         </div>
-        <label class="field-label">รายละเอียด</label>
+        <label class="field-label">หมวดหมู่</label>
+        <div class="finance-category-row" id="financeCategoryRow"></div>
+        <label class="field-label" style="margin-top:10px;">รายละเอียด</label>
         <input class="form-input" id="f_finance_desc" placeholder="เช่น ค่าขนม, ซื้ออุปกรณ์" />
         <div class="form-grid" style="margin-top:10px;">
           <div>
@@ -1099,11 +1132,28 @@ function formatBaht(n) {
   return Number(n || 0).toLocaleString("th-TH", { maximumFractionDigits: 2 });
 }
 
+const FINANCE_CATEGORIES = {
+  income: [
+    { icon: "💰", label: "เก็บเงิน" },
+    { icon: "🎁", label: "ได้รับ" },
+    { icon: "🏆", label: "รางวัล" },
+    { icon: "📥", label: "อื่นๆ" },
+  ],
+  expense: [
+    { icon: "🍔", label: "อาหาร" },
+    { icon: "📚", label: "อุปกรณ์" },
+    { icon: "🎉", label: "กิจกรรม" },
+    { icon: "📦", label: "อื่นๆ" },
+  ],
+};
+let financeSelectedCategory = FINANCE_CATEGORIES.income[0];
+
 function openFinanceView() {
   financeViewOpen = true;
   document.getElementById("taskMainView").style.display = "none";
   document.getElementById("financeView").style.display = "block";
   document.getElementById("financeAddBtns").style.display = editUnlocked ? "flex" : "none";
+  document.getElementById("financeViewerHint").style.display = editUnlocked ? "none" : "block";
   renderFinance();
 }
 function closeFinanceView() {
@@ -1128,6 +1178,19 @@ function renderFinance() {
   document.getElementById("financeIncomeTotal").textContent = formatBaht(incomeTotal) + " บาท";
   document.getElementById("financeExpenseTotal").textContent = formatBaht(expenseTotal) + " บาท";
 
+  // Donut chart: income vs expense share
+  const donutWrap = document.getElementById("financeDonutWrap");
+  const total = incomeTotal + expenseTotal;
+  if (total > 0) {
+    donutWrap.style.display = "flex";
+    const incomePct = Math.round((incomeTotal / total) * 100);
+    document.getElementById("financeDonut").style.background =
+      `conic-gradient(var(--green) 0% ${incomePct}%, #FF6B6B ${incomePct}% 100%)`;
+    document.getElementById("financeDonutPct").textContent = `${incomePct}% รับ`;
+  } else {
+    donutWrap.style.display = "none";
+  }
+
   const list = document.getElementById("financeList");
   if (entries.length === 0) {
     list.innerHTML = `<div class="empty-state-cute">ยังไม่มีรายการการเงิน</div>`;
@@ -1137,11 +1200,14 @@ function renderFinance() {
   list.innerHTML = sorted.map(e => {
     const isIncome = e.type === "income";
     const dateLabel = e.date ? fmtDate(e.date) : "";
+    const icon = e.categoryIcon || (isIncome ? "💰" : "📦");
+    const catLabel = e.categoryLabel || "";
     return `
       <div class="finance-item">
-        <span class="finance-item-icon ${isIncome ? 'income' : 'expense'}">${isIncome ? '➕' : '➖'}</span>
+        <span class="finance-item-icon ${isIncome ? 'income' : 'expense'}">${icon}</span>
         <div class="finance-item-body">
           <div class="finance-item-desc">${escapeHtml(e.desc)}</div>
+          <div class="finance-item-cat">${escapeHtml(catLabel)}</div>
           <div class="finance-item-date">${dateLabel}</div>
         </div>
         <span class="finance-item-amount ${isIncome ? 'income' : 'expense'}">${isIncome ? '+' : '-'}${formatBaht(e.amount)}</span>
@@ -1151,13 +1217,45 @@ function renderFinance() {
   }).join("");
 }
 
+function renderFinanceCategoryChips(type) {
+  const row = document.getElementById("financeCategoryRow");
+  const cats = FINANCE_CATEGORIES[type];
+  financeSelectedCategory = cats[0];
+  row.innerHTML = cats.map((c, i) => `
+    <button type="button" class="finance-cat-chip ${i === 0 ? 'selected' : ''}" data-icon="${c.icon}" data-label="${c.label}">${c.icon} ${c.label}</button>
+  `).join("");
+  row.querySelectorAll(".finance-cat-chip").forEach(chip => {
+    chip.addEventListener("click", () => {
+      row.querySelectorAll(".finance-cat-chip").forEach(c => c.classList.remove("selected"));
+      chip.classList.add("selected");
+      financeSelectedCategory = { icon: chip.dataset.icon, label: chip.dataset.label };
+    });
+  });
+}
+
 function openFinanceForm(type) {
   financeFormType = type;
   document.getElementById("financeFormTitle").textContent = type === "income" ? "เพิ่มรายรับ" : "เพิ่มรายจ่าย";
   document.getElementById("f_finance_desc").value = "";
   document.getElementById("f_finance_amount").value = "";
   document.getElementById("f_finance_date").value = todayIso();
+  renderFinanceCategoryChips(type);
   document.getElementById("financeFormCard").classList.add("show");
+}
+
+function spawnFloatingMoney(amount, isIncome) {
+  const card = document.querySelector(".finance-balance-card");
+  if (!card) return;
+  const rect = card.getBoundingClientRect();
+  const el = document.createElement("div");
+  el.className = "floating-money";
+  el.textContent = `${isIncome ? "+" : "-"}${formatBaht(amount)} ฿`;
+  el.style.color = isIncome ? "var(--green)" : "#FF6B6B";
+  el.style.left = `${rect.left + rect.width / 2 - 40}px`;
+  el.style.top = `${rect.top + rect.height / 2}px`;
+  document.body.appendChild(el);
+  requestAnimationFrame(() => el.classList.add("rise"));
+  setTimeout(() => el.remove(), 1200);
 }
 
 function saveFinanceEntry() {
@@ -1167,9 +1265,18 @@ function saveFinanceEntry() {
   const date = document.getElementById("f_finance_date").value;
   if (!desc || !amount || amount <= 0) { showBanner("error", "กรุณากรอกรายละเอียดและจำนวนเงินให้ถูกต้อง"); return; }
 
-  financeRef.push({ type: financeFormType, desc, amount, date, createdAt: Date.now() })
+  financeRef.push({
+    type: financeFormType,
+    desc,
+    amount,
+    date,
+    categoryIcon: financeSelectedCategory.icon,
+    categoryLabel: financeSelectedCategory.label,
+    createdAt: Date.now(),
+  })
     .then(() => {
       showSaveConfirm();
+      spawnFloatingMoney(amount, financeFormType === "income");
       document.getElementById("financeFormCard").classList.remove("show");
     })
     .catch((err) => {
@@ -1494,22 +1601,6 @@ function spawnInboundParticles() {
   requestAnimationFrame(() => {
     wrap.querySelectorAll(".chrono-inbound").forEach(el => el.classList.add("animate"));
   });
-}
-
-function spawnFallingCoins(durationMs) {
-  const wrap = document.getElementById("coinFallWrap");
-  wrap.innerHTML = "";
-  const count = 22;
-  for (let i = 0; i < count; i++) {
-    const c = document.createElement("span");
-    c.className = "coin-piece fall";
-    c.textContent = "🍃";
-    c.style.left = `${Math.random() * 96}%`;
-    const fallDuration = 1.4 + Math.random() * 1.1;
-    c.style.animationDuration = `${fallDuration}s`;
-    c.style.animationDelay = `${Math.random() * (durationMs / 1000) * 0.6}s`;
-    wrap.appendChild(c);
-  }
 }
 
 function spawnConfetti() {
